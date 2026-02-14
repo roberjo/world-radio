@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__filesystem__list_allowed_directories",
+      "mcp__filesystem__list_directory",
+      "WebFetch(domain:docs.radio-browser.info)",
+      "mcp__filesystem__read_text_file",
+      "mcp__filesystem__search_files",
+      "WebFetch(domain:de1.api.radio-browser.info)",
+      "WebFetch(domain:globe.gl)",
+      "Bash(npm init:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx vite build:*)",
+      "Bash(timeout:*)"
+    ]
+  }
+}

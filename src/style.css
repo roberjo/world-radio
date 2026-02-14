@@ -1,0 +1,669 @@
+/* ═══════════════════════════════════════════
+   World Radio — Global Styles
+   "Shortwave Radio Meets Modern Map"
+   ═══════════════════════════════════════════ */
+
+:root {
+  --bg: #0a0a0f;
+  --surface: #1a1a2e;
+  --surface-hover: #252540;
+  --accent: #f59e0b;
+  --accent-dim: rgba(245, 158, 11, 0.3);
+  --accent-glow: rgba(245, 158, 11, 0.15);
+  --red: #ef4444;
+  --text: #e5e7eb;
+  --text-muted: #9ca3af;
+  --header-h: 44px;
+  --player-h: 72px;
+}
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* ── Header ─────────────────────────────── */
+
+#header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--header-h);
+  background: rgba(10, 10, 15, 0.9);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  z-index: 1000;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo {
+  font-size: 20px;
+}
+
+#header h1 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.5px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.header-btn:hover {
+  background: var(--surface);
+  color: var(--accent);
+  border-color: var(--accent-dim);
+}
+
+.header-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ── Map ────────────────────────────────── */
+
+#map {
+  position: fixed;
+  top: var(--header-h);
+  left: 0;
+  right: 0;
+  bottom: var(--player-h);
+  z-index: 1;
+}
+
+/* Leaflet overrides */
+.leaflet-control-zoom a {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background: var(--surface-hover) !important;
+  color: var(--accent) !important;
+}
+
+.leaflet-control-attribution {
+  background: rgba(10, 10, 15, 0.7) !important;
+  color: var(--text-muted) !important;
+  font-size: 10px !important;
+}
+
+.leaflet-control-attribution a {
+  color: var(--text-muted) !important;
+}
+
+/* ── Cluster Markers ────────────────────── */
+
+.cluster-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+.cluster-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--accent) 0%, rgba(245, 158, 11, 0.4) 70%);
+  box-shadow: 0 0 15px var(--accent-dim), 0 0 30px var(--accent-glow);
+  color: var(--bg);
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.cluster-marker:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 20px var(--accent-dim), 0 0 40px var(--accent-glow);
+}
+
+.cluster-marker span {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* ── Station Markers ────────────────────── */
+
+.station-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+.station-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.station-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent-dim);
+  transition: all 0.3s;
+}
+
+.station-marker:hover .station-dot {
+  width: 12px;
+  height: 12px;
+  box-shadow: 0 0 12px var(--accent-dim);
+}
+
+.station-marker.active .station-dot {
+  width: 12px;
+  height: 12px;
+  background: var(--red);
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.5);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(239, 68, 68, 0.5); }
+  50% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.8), 0 0 40px rgba(239, 68, 68, 0.3); }
+}
+
+/* ── Station Tooltip ────────────────────── */
+
+.station-tooltip {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 6px !important;
+  font-size: 12px !important;
+  padding: 6px 10px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+}
+
+.station-tooltip::before {
+  border-top-color: var(--surface) !important;
+}
+
+/* ── Player Bar ─────────────────────────── */
+
+#player-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--player-h);
+  background: rgba(10, 10, 15, 0.95);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 16px;
+  z-index: 1000;
+  transition: opacity 0.3s;
+}
+
+.player-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.player-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.player-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.player-btn:hover {
+  background: var(--surface);
+  border-color: var(--accent-dim);
+  color: var(--accent);
+}
+
+.play-btn {
+  width: 42px;
+  height: 42px;
+  border-color: var(--accent-dim);
+  color: var(--accent);
+}
+
+.play-btn:hover {
+  background: var(--accent-dim);
+}
+
+.play-btn.buffering {
+  animation: bufferPulse 1s ease-in-out infinite;
+}
+
+@keyframes bufferPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.player-info {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.station-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.station-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.player-volume {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.volume-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--text-muted);
+}
+
+.volume-slider {
+  width: 80px;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  box-shadow: 0 0 6px var(--accent-dim);
+}
+
+.volume-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 0 6px var(--accent-dim);
+}
+
+/* Frequency animation bar */
+.freq-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  overflow: hidden;
+}
+
+.freq-bar-inner {
+  height: 100%;
+  width: 30%;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.freq-bar.playing .freq-bar-inner {
+  opacity: 1;
+  animation: freqSweep 2s ease-in-out infinite;
+}
+
+@keyframes freqSweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}
+
+/* ── Scanner Overlay ────────────────────── */
+
+#scanner-overlay {
+  position: fixed;
+  top: var(--header-h);
+  left: 0;
+  right: 0;
+  z-index: 900;
+  background: rgba(10, 10, 15, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+  transform: translateY(-100%);
+  opacity: 0;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s;
+  pointer-events: none;
+}
+
+#scanner-overlay.visible {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.scanner-content {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  text-align: center;
+}
+
+.scanner-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.scanner-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.scanner-btn-close {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 24px;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.scanner-btn-close:hover {
+  color: var(--text);
+  background: var(--surface);
+}
+
+/* Scanner frequency visualization */
+.scanner-freq {
+  height: 40px;
+  background: var(--surface);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.freq-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent), 0 0 20px var(--accent-dim);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.freq-line.scanning {
+  opacity: 1;
+  animation: scanSweep 3s ease-in-out infinite;
+}
+
+@keyframes scanSweep {
+  0% { left: 0%; }
+  50% { left: 97%; }
+  100% { left: 0%; }
+}
+
+.freq-ticks {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.03) 0px,
+    rgba(255, 255, 255, 0.03) 1px,
+    transparent 1px,
+    transparent 8px
+  );
+}
+
+.scanner-region-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.scanner-region {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  min-width: 140px;
+}
+
+.scanner-btn {
+  padding: 8px 16px;
+  background: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.scanner-btn:hover {
+  background: var(--surface-hover);
+  color: var(--accent);
+  border-color: var(--accent-dim);
+}
+
+.scanner-btn.primary {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+.scanner-btn.primary:hover {
+  background: #d97706;
+  border-color: #d97706;
+}
+
+.scanner-status {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  min-height: 20px;
+}
+
+.scanner-controls {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+/* ── Loading Overlay ────────────────────── */
+
+#loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  transition: opacity 0.5s;
+}
+
+#loading-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+#loading-overlay p {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* ── Toast ──────────────────────────────── */
+
+.toast {
+  position: fixed;
+  bottom: calc(var(--player-h) + 16px);
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--surface);
+  color: var(--text);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+  z-index: 1100;
+  pointer-events: none;
+}
+
+.toast.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ── Mobile ─────────────────────────────── */
+
+@media (max-width: 640px) {
+  #header h1 {
+    font-size: 14px;
+  }
+
+  .header-btn {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  .header-btn svg + span,
+  .header-btn:not(:first-child):not(:last-child) > svg ~ * {
+    display: none;
+  }
+
+  #btn-surprise {
+    display: none;
+  }
+
+  .player-volume {
+    display: none;
+  }
+
+  .player-info {
+    max-width: 55vw;
+  }
+
+  #player-bar {
+    padding: 0 10px;
+    gap: 10px;
+  }
+
+  .scanner-content {
+    padding: 16px 12px;
+  }
+}
