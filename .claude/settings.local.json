@@ -12,7 +12,8 @@
       "Bash(npm install:*)",
       "Bash(npx tsc:*)",
       "Bash(npx vite build:*)",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "Bash(npx vite:*)"
     ]
   }
 }

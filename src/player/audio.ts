@@ -2,31 +2,48 @@ import type { Station } from '../api/types.ts';
 import { registerClick } from '../api/radio-browser.ts';
 import { store } from '../store/store.ts';
 
+const STREAM_TIMEOUT = 15000;
+
 class AudioPlayer {
   private audio: HTMLAudioElement;
   private hls: { destroy(): void } | null = null;
+  private timeoutId: ReturnType<typeof setTimeout> | null = null;
+  private playId = 0;
+  private stopping = false;
 
   constructor() {
-    this.audio = new Audio();
+    this.audio = document.createElement('audio');
+    this.audio.preload = 'none';
     this.audio.volume = store.get('volume');
+    this.audio.style.display = 'none';
+    document.body.appendChild(this.audio);
 
     this.audio.addEventListener('playing', () => {
+      this.clearStreamTimeout();
       store.set('isPlaying', true);
       store.set('isBuffering', false);
     });
 
     this.audio.addEventListener('waiting', () => {
-      store.set('isBuffering', true);
+      if (!this.stopping) {
+        store.set('isBuffering', true);
+      }
     });
 
     this.audio.addEventListener('pause', () => {
-      store.set('isPlaying', false);
+      if (!this.stopping) {
+        store.set('isPlaying', false);
+      }
     });
 
     this.audio.addEventListener('error', () => {
+      if (this.stopping) return;
+      this.clearStreamTimeout();
       store.set('isPlaying', false);
       store.set('isBuffering', false);
-      store.set('error', 'Stream unavailable');
+      if (store.get('currentStation')) {
+        store.set('error', 'Stream unavailable');
+      }
     });
 
     store.subscribe('volume', (v) => {
@@ -35,22 +52,45 @@ class AudioPlayer {
   }
 
   async play(station: Station): Promise<void> {
-    this.stop();
+    const currentPlayId = ++this.playId;
+
+    // Clean stop of any current playback
+    this.stopping = true;
+    this.clearStreamTimeout();
+    this.audio.pause();
+    if (this.hls) {
+      this.hls.destroy();
+      this.hls = null;
+    }
+    this.stopping = false;
+
     store.set('currentStation', station);
     store.set('isBuffering', true);
+    store.set('isPlaying', false);
     store.set('error', null);
 
     const streamUrl = station.url_resolved || station.url;
 
+    // Let the browser process the pause before starting new playback
+    await new Promise(r => setTimeout(r, 50));
+    if (this.playId !== currentPlayId) return;
+
     try {
       if (this.isHLS(streamUrl) || station.hls === 1) {
-        await this.playHLS(streamUrl);
+        await this.playHLS(streamUrl, currentPlayId);
       } else {
         this.audio.src = streamUrl;
+        this.audio.load();
+        this.startStreamTimeout();
         await this.audio.play();
       }
-      registerClick(station.stationuuid);
-    } catch {
+      if (this.playId === currentPlayId) {
+        registerClick(station.stationuuid);
+      }
+    } catch (e: unknown) {
+      if (e instanceof DOMException && e.name === 'AbortError') return;
+      if (this.playId !== currentPlayId) return;
+      this.clearStreamTimeout();
       store.set('isBuffering', false);
       store.set('error', 'Failed to play stream');
     }
@@ -60,26 +100,56 @@ class AudioPlayer {
     return url.includes('.m3u8');
   }
 
-  private async playHLS(url: string): Promise<void> {
+  private async playHLS(url: string, currentPlayId: number): Promise<void> {
     const { default: Hls } = await import('hls.js');
+    if (this.playId !== currentPlayId) return;
     if (Hls.isSupported()) {
       const hls = new Hls();
       this.hls = hls;
       hls.loadSource(url);
       hls.attachMedia(this.audio);
+      this.startStreamTimeout();
       return new Promise((resolve, reject) => {
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          if (this.playId !== currentPlayId) { resolve(); return; }
           this.audio.play().then(resolve).catch(reject);
         });
         hls.on(Hls.Events.ERROR, () => reject(new Error('HLS error')));
       });
     } else if (this.audio.canPlayType('application/vnd.apple.mpegurl')) {
       this.audio.src = url;
+      this.audio.load();
+      this.startStreamTimeout();
       await this.audio.play();
     }
   }
 
+  private startStreamTimeout(): void {
+    this.clearStreamTimeout();
+    this.timeoutId = setTimeout(() => {
+      if (store.get('isBuffering') && !store.get('isPlaying')) {
+        store.set('isBuffering', false);
+        store.set('error', 'Stream timed out — try another station');
+        this.stopping = true;
+        this.audio.pause();
+        this.audio.removeAttribute('src');
+        this.audio.load();
+        this.stopping = false;
+      }
+    }, STREAM_TIMEOUT);
+  }
+
+  private clearStreamTimeout(): void {
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId);
+      this.timeoutId = null;
+    }
+  }
+
   stop(): void {
+    this.playId++;
+    this.stopping = true;
+    this.clearStreamTimeout();
     this.audio.pause();
     this.audio.removeAttribute('src');
     this.audio.load();
@@ -87,6 +157,7 @@ class AudioPlayer {
       this.hls.destroy();
       this.hls = null;
     }
+    this.stopping = false;
     store.set('isPlaying', false);
     store.set('isBuffering', false);
   }
