@@ -45,6 +45,15 @@ export async function fetchStationsByCountry(countrycode: string, limit = 200): 
   );
 }
 
+export async function fetchStationByUUID(uuid: string): Promise<Station | null> {
+  try {
+    const results = await apiFetch<Station[]>(`/json/stations/byuuid/${encodeURIComponent(uuid)}`);
+    return results.length > 0 ? results[0] : null;
+  } catch {
+    return null;
+  }
+}
+
 export function registerClick(stationuuid: string): void {
   fetch(`${getServer()}/json/url/${stationuuid}`, { method: 'POST' }).catch(() => {});
 }

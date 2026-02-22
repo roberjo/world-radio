@@ -16,6 +16,10 @@
       <h1>World Radio</h1>
     </div>
     <div class="header-right">
+      <button id="btn-lists" class="header-btn" title="Station Lists (L)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+        Lists
+      </button>
       <button id="btn-scanner" class="header-btn" title="Radio Scanner (S)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h4l3-9 4 18 3-9h6"/></svg>
         Scanner
@@ -62,6 +66,27 @@
     </div>
   </div>
 
+  <!-- Lists Panel -->
+  <div id="lists-panel">
+    <div class="lists-header">
+      <h2>Station Lists</h2>
+      <button id="lists-close" class="scanner-btn-close" title="Close (L)">&times;</button>
+    </div>
+    <div id="lists-add-current" class="lists-add-current" style="display:none">
+      <button id="btn-add-to-list" class="lists-action-btn">+ Add current station</button>
+    </div>
+    <div class="lists-tabs">
+      <button class="lists-tab active" data-tab="favorites">Favorites</button>
+      <button class="lists-tab" data-tab="genre">Genre</button>
+      <button class="lists-tab" data-tab="country">Country</button>
+      <button class="lists-tab" data-tab="custom">Custom</button>
+    </div>
+    <div id="lists-content" class="lists-content"></div>
+    <div class="lists-footer">
+      <button id="btn-create-list" class="lists-action-btn">+ Create list</button>
+    </div>
+  </div>
+
   <!-- Player Bar -->
   <div id="player-bar">
     <div class="player-controls">
@@ -78,6 +103,14 @@
     <div class="player-info">
       <div id="station-name" class="station-name">Click a station on the map to start listening</div>
       <div id="station-meta" class="station-meta"></div>
+    </div>
+    <div class="player-actions">
+      <button id="btn-favorite" class="player-btn" title="Add to Favorites">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      </button>
+      <button id="btn-share" class="player-btn" title="Copy station link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+      </button>
     </div>
     <div class="player-volume">
       <svg viewBox="0 0 24 24" fill="currentColor" class="volume-icon"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>

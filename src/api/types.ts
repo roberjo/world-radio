@@ -61,6 +61,20 @@ export type MarkerProperties = ClusterProperties | StationPointProperties;
 
 export type ScannerState = 'idle' | 'scanning' | 'paused';
 
+export interface StationListEntry {
+  stationuuid: string;
+  name: string;
+  country: string;
+  favicon: string;
+}
+
+export interface StationList {
+  id: string;
+  label: string;
+  type: 'favorites' | 'genre' | 'country' | 'custom';
+  entries: StationListEntry[];
+}
+
 export interface AppState {
   stations: Map<string, Station>;
   currentStation: Station | null;
@@ -71,4 +85,5 @@ export interface AppState {
   scannerRegion: string;
   loading: boolean;
   error: string | null;
+  stationLists: StationList[];
 }
