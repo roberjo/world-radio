@@ -48,6 +48,7 @@ const DEFAULT_GENRES: [string, string[]][] = [
   ['Latin',       ['latin', 'salsa', 'cumbia', 'reggaeton']],
   ['Ambient',     ['ambient', 'chillout', 'chill']],
   ['World Music', ['world', 'folk', 'african', 'celtic']],
+  ['News',        ['news', 'talk', 'information', 'public radio']],
 ];
 
 /** Countries to create default lists for (by country name, to match station.country) */
