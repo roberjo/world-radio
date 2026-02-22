@@ -28,7 +28,10 @@
       "Bash(brew install:*)",
       "Bash(brew cleanup:*)",
       "Bash(/tmp/gh_extract/gh_2.87.2_macOS_amd64/bin/gh auth status)",
-      "Bash(/tmp/gh_extract/gh_2.87.2_macOS_amd64/bin/gh auth login -h github.com -p https -w)"
+      "Bash(/tmp/gh_extract/gh_2.87.2_macOS_amd64/bin/gh auth login -h github.com -p https -w)",
+      "Bash(git push:*)",
+      "Bash(GH=/tmp/gh_extract/gh_2.87.2_macOS_amd64/bin/gh)",
+      "Bash($GH release:*)"
     ]
   }
 }
