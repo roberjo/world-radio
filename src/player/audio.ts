@@ -184,15 +184,29 @@ class AudioPlayer {
     // Remove any existing prompt
     document.getElementById('autoplay-prompt')?.remove();
 
+    const faviconHtml = station.favicon
+      ? `<img src="${station.favicon}" alt="" class="autoplay-prompt-favicon" onerror="this.style.display='none'">`
+      : '';
+
     const overlay = document.createElement('div');
     overlay.id = 'autoplay-prompt';
     overlay.innerHTML = `
       <div class="autoplay-prompt-card">
-        <div class="autoplay-prompt-icon">
-          <svg viewBox="0 0 24 24" fill="currentColor" width="32" height="32"><polygon points="5,3 19,12 5,21"/></svg>
+        <div class="autoplay-prompt-heading">Welcome to World Radio</div>
+        <div class="autoplay-prompt-subheading">Someone shared a station with you</div>
+        <div class="autoplay-prompt-station-card">
+          ${faviconHtml}
+          <div class="autoplay-prompt-station-info">
+            <div class="autoplay-prompt-station-name">${station.name}</div>
+            <div class="autoplay-prompt-station-country">${station.country}</div>
+          </div>
         </div>
-        <div class="autoplay-prompt-text">Tap to start listening</div>
-        <div class="autoplay-prompt-station">${station.name}</div>
+        <div class="autoplay-prompt-play">
+          <div class="autoplay-prompt-play-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><polygon points="6,3 20,12 6,21"/></svg>
+          </div>
+          <span>Tap anywhere to tune in</span>
+        </div>
       </div>
     `;
 
