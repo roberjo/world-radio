@@ -1107,6 +1107,70 @@ body {
   font-size: 14px;
 }
 
+/* ── Autoplay Prompt ────────────────────── */
+
+#autoplay-prompt {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+#autoplay-prompt.visible {
+  opacity: 1;
+}
+
+#autoplay-prompt.dismissing {
+  opacity: 0;
+}
+
+.autoplay-prompt-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 48px;
+  background: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  text-align: center;
+}
+
+.autoplay-prompt-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 3px;
+}
+
+.autoplay-prompt-text {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.autoplay-prompt-station {
+  font-size: 12px;
+  color: var(--text-muted);
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* ── Toast ──────────────────────────────── */
 
 .toast {

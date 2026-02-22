@@ -90,6 +90,12 @@ class AudioPlayer {
     } catch (e: unknown) {
       if (e instanceof DOMException && e.name === 'AbortError') return;
       if (this.playId !== currentPlayId) return;
+      // Browser blocked autoplay — show a gentle prompt
+      if (e instanceof DOMException && e.name === 'NotAllowedError') {
+        store.set('isBuffering', false);
+        this.showAutoplayPrompt(station);
+        return;
+      }
       this.clearStreamTimeout();
       store.set('isBuffering', false);
       store.set('error', 'Failed to play stream');
@@ -172,6 +178,34 @@ class AudioPlayer {
 
   setVolume(v: number): void {
     store.set('volume', Math.max(0, Math.min(1, v)));
+  }
+
+  private showAutoplayPrompt(station: Station): void {
+    // Remove any existing prompt
+    document.getElementById('autoplay-prompt')?.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'autoplay-prompt';
+    overlay.innerHTML = `
+      <div class="autoplay-prompt-card">
+        <div class="autoplay-prompt-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="32" height="32"><polygon points="5,3 19,12 5,21"/></svg>
+        </div>
+        <div class="autoplay-prompt-text">Tap to start listening</div>
+        <div class="autoplay-prompt-station">${station.name}</div>
+      </div>
+    `;
+
+    const dismiss = () => {
+      overlay.classList.add('dismissing');
+      this.audio.play().catch(() => {});
+      setTimeout(() => overlay.remove(), 300);
+    };
+
+    overlay.addEventListener('click', dismiss);
+    document.body.appendChild(overlay);
+    // Trigger enter animation on next frame
+    requestAnimationFrame(() => overlay.classList.add('visible'));
   }
 }
 

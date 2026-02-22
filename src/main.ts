@@ -23,7 +23,9 @@ async function init(): Promise<void> {
   initPlayerUI();
   initScannerUI();
   initListsUI();
-  openListsPanel();
+  if (window.innerWidth > 640) {
+    openListsPanel();
+  }
   initSurpriseMe();
   await initMap();
 
