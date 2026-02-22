@@ -2,10 +2,10 @@ import './style.css';
 import { initMap, flyToStation } from './map/map.ts';
 import { initPlayerUI, showToast } from './player/player-ui.ts';
 import { initScannerUI } from './scanner/scanner-ui.ts';
-import { initListsUI, openListsPanelWithSharedList } from './lists/lists-ui.ts';
+import { initListsUI, openListsPanel, openListsPanelWithSharedList } from './lists/lists-ui.ts';
 import { store } from './store/store.ts';
 import { audioPlayer } from './player/audio.ts';
-import { loadLists, saveLists } from './store/persistence.ts';
+import { loadLists, saveLists, seedDefaultLists } from './store/persistence.ts';
 import { initRouter } from './router/router.ts';
 import { fetchStationByUUID } from './api/radio-browser.ts';
 import type { Route } from './router/router.ts';
@@ -23,8 +23,16 @@ async function init(): Promise<void> {
   initPlayerUI();
   initScannerUI();
   initListsUI();
+  openListsPanel();
   initSurpriseMe();
   await initMap();
+
+  // Seed default genre/country lists from loaded stations (runs once)
+  const allStations = Array.from(store.get('stations').values());
+  const seeded = seedDefaultLists(allStations, store.get('stationLists'));
+  if (seeded) {
+    store.set('stationLists', seeded);
+  }
 
   // Listen for flyTo requests from lists panel
   document.addEventListener('station-fly-to', ((e: CustomEvent<Station>) => {

@@ -5,6 +5,7 @@ import { buildListUrl } from '../router/router.ts';
 import type { Station, StationList, StationListEntry } from '../api/types.ts';
 
 let activeTab: StationList['type'] = 'favorites';
+let drillListId: string | null = null;
 
 function getPanel(): HTMLElement {
   return document.getElementById('lists-panel')!;
@@ -35,7 +36,30 @@ function renderContent(): void {
     return;
   }
 
-  content.innerHTML = lists.map(list => `
+  // Favorites tab is always flat (no drill-down)
+  if (activeTab === 'favorites') {
+    content.innerHTML = renderFlatLists(lists);
+    return;
+  }
+
+  // Drill-down view
+  if (drillListId) {
+    const list = lists.find(l => l.id === drillListId);
+    if (!list) {
+      drillListId = null;
+      renderContent();
+      return;
+    }
+    content.innerHTML = renderDrillDown(list);
+    return;
+  }
+
+  // Category grid view
+  content.innerHTML = renderCategoryGrid(lists);
+}
+
+function renderFlatLists(lists: StationList[]): string {
+  return lists.map(list => `
     <div class="list-group" data-list-id="${list.id}">
       <div class="list-group-header">
         <span>${list.label} (${list.entries.length})</span>
@@ -50,6 +74,46 @@ function renderContent(): void {
       }
     </div>
   `).join('');
+}
+
+function renderCategoryGrid(lists: StationList[]): string {
+  return `<div class="list-card-grid">${lists.map(list => {
+    const previews = list.entries.slice(0, 4).map(e =>
+      e.favicon
+        ? `<img src="${escapeAttr(e.favicon)}" alt="" loading="lazy" onerror="this.style.display='none'">`
+        : ''
+    ).filter(Boolean).join('');
+
+    return `
+      <div class="list-card" data-action="drill" data-list-id="${list.id}">
+        <div class="list-card-label">${escapeHtml(list.label)}</div>
+        <div class="list-card-count">${list.entries.length} station${list.entries.length !== 1 ? 's' : ''}</div>
+        ${previews ? `<div class="list-card-previews">${previews}</div>` : ''}
+      </div>
+    `;
+  }).join('')}</div>`;
+}
+
+function renderDrillDown(list: StationList): string {
+  return `
+    <div class="list-drill-back" data-action="back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="15 18 9 12 15 6"/></svg>
+      Back
+    </div>
+    <div class="list-group" data-list-id="${list.id}">
+      <div class="list-group-header">
+        <span>${escapeHtml(list.label)} (${list.entries.length})</span>
+        <div class="list-group-actions">
+          <button class="list-group-btn" data-action="share" data-list-id="${list.id}" title="Share list">Share</button>
+          ${list.id !== 'favorites' ? `<button class="list-group-btn" data-action="delete-list" data-list-id="${list.id}" title="Delete list">Delete</button>` : ''}
+        </div>
+      </div>
+      ${list.entries.length === 0
+        ? '<div class="list-empty">No stations</div>'
+        : list.entries.map(entry => renderRow(entry, list.id)).join('')
+      }
+    </div>
+  `;
 }
 
 function renderRow(entry: StationListEntry, listId: string): string {
@@ -101,6 +165,16 @@ function handleContentClick(e: Event): void {
   const listId = btn.dataset.listId;
 
   switch (action) {
+    case 'drill':
+      if (listId) {
+        drillListId = listId;
+        renderContent();
+      }
+      break;
+    case 'back':
+      drillListId = null;
+      renderContent();
+      break;
     case 'play':
       if (uuid) playStationByUUID(uuid);
       break;
@@ -152,6 +226,7 @@ function shareList(listId: string): void {
 }
 
 function deleteList(listId: string): void {
+  if (drillListId === listId) drillListId = null;
   const lists = store.get('stationLists').filter(l => l.id !== listId);
   store.set('stationLists', lists);
   showToast('List deleted');
@@ -249,6 +324,7 @@ export function initListsUI(): void {
   document.querySelectorAll('.lists-tab').forEach(tab => {
     tab.addEventListener('click', () => {
       activeTab = (tab as HTMLElement).dataset.tab as StationList['type'];
+      drillListId = null;
       updateTabUI();
       renderContent();
     });

@@ -195,16 +195,48 @@ body {
 }
 
 .station-marker.active .station-dot {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   background: var(--red);
-  box-shadow: 0 0 12px rgba(239, 68, 68, 0.5);
-  animation: pulse 1.5s ease-in-out infinite;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+  animation: active-breathe 2.5s ease-in-out infinite;
+  position: relative;
 }
 
-@keyframes pulse {
-  0%, 100% { box-shadow: 0 0 8px rgba(239, 68, 68, 0.5); }
-  50% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.8), 0 0 40px rgba(239, 68, 68, 0.3); }
+.station-marker.active .station-dot::before,
+.station-marker.active .station-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid rgba(239, 68, 68, 0.6);
+  animation: active-ripple 3s ease-out infinite;
+}
+
+.station-marker.active .station-dot::after {
+  animation-delay: 1.5s;
+}
+
+@keyframes active-breathe {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 6px rgba(239, 68, 68, 0.3);
+  }
+  50% {
+    transform: scale(1.15);
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.5);
+  }
+}
+
+@keyframes active-ripple {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(3.5);
+    opacity: 0;
+  }
 }
 
 /* ── Station Tooltip ────────────────────── */
@@ -400,10 +432,10 @@ body {
   z-index: 900;
   background: rgba(10, 10, 15, 0.95);
   backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+  border-bottom: 1px solid rgba(245, 158, 11, 0.15);
   transform: translateY(-100%);
   opacity: 0;
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s, left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   pointer-events: none;
 }
 
@@ -413,40 +445,67 @@ body {
   pointer-events: auto;
 }
 
+#scanner-overlay.lists-open {
+  left: 340px;
+}
+
 .scanner-content {
-  max-width: 600px;
+  max-width: 520px;
   margin: 0 auto;
-  padding: 24px 16px;
-  text-align: center;
+  padding: 16px 16px 20px;
 }
 
 .scanner-header {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 16px;
-  margin-bottom: 20px;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.scanner-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .scanner-header h2 {
-  font-size: 18px;
+  font-size: 13px;
   font-weight: 600;
-  color: var(--accent);
-  letter-spacing: 1px;
+  color: var(--text-muted);
+  letter-spacing: 1.5px;
   text-transform: uppercase;
+}
+
+.scanner-badge {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--accent);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.scanner-badge.paused {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-muted);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .scanner-btn-close {
   position: absolute;
-  right: 16px;
-  top: 16px;
+  right: -4px;
+  top: -4px;
   background: none;
   border: none;
   color: var(--text-muted);
-  font-size: 24px;
+  font-size: 20px;
   cursor: pointer;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -460,9 +519,9 @@ body {
 
 /* Scanner frequency visualization */
 .scanner-freq {
-  height: 40px;
+  height: 32px;
   background: var(--surface);
-  border-radius: 8px;
+  border-radius: 6px;
   margin-bottom: 16px;
   position: relative;
   overflow: hidden;
@@ -506,36 +565,148 @@ body {
   );
 }
 
-.scanner-region-nav {
+/* Scanner body — station info, region, controls */
+.scanner-body {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.scanner-station {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.scanner-station-favicon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: var(--surface);
+  flex-shrink: 0;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  margin-bottom: 12px;
+  font-size: 14px;
 }
 
-.scanner-region {
-  font-size: 16px;
+.scanner-station-favicon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.scanner-station-info {
+  min-width: 0;
+  text-align: left;
+}
+
+.scanner-station-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.scanner-station-country {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.scanner-divider {
+  width: 1px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.scanner-region-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.scanner-region-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 100px;
+}
+
+.scanner-region-prefix {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.scanner-region-label > #scanner-region-name {
+  font-size: 13px;
   font-weight: 600;
   color: var(--text);
-  min-width: 140px;
+  line-height: 1.2;
+}
+
+.scanner-nav-btn {
+  width: 28px;
+  height: 28px;
+  background: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.scanner-nav-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.scanner-divider + .scanner-region-nav {
+  /* second divider before controls */
 }
 
 .scanner-btn {
-  padding: 8px 16px;
+  padding: 7px 14px;
   background: var(--surface);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 6px;
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 12px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.scanner-btn svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
 }
 
 .scanner-btn:hover {
   background: var(--surface-hover);
-  color: var(--accent);
-  border-color: var(--accent-dim);
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .scanner-btn.primary {
@@ -550,17 +721,10 @@ body {
   border-color: #d97706;
 }
 
-.scanner-status {
-  font-size: 13px;
-  color: var(--text-muted);
-  margin-bottom: 16px;
-  min-height: 20px;
-}
-
 .scanner-controls {
   display: flex;
-  justify-content: center;
-  gap: 12px;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 /* ── Lists Panel ───────────────────────── */
@@ -798,6 +962,78 @@ body {
   font-size: 13px;
 }
 
+/* ── List Card Grid (drill-down summary) ── */
+
+.list-card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 8px 12px;
+}
+
+.list-card {
+  background: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.list-card:hover {
+  background: var(--surface-hover);
+  border-color: var(--accent-dim);
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+
+.list-card-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 4px;
+}
+
+.list-card-count {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.list-card-previews {
+  display: flex;
+  gap: 4px;
+}
+
+.list-card-previews img {
+  width: 20px;
+  height: 20px;
+  border-radius: 3px;
+  object-fit: cover;
+  background: var(--bg);
+}
+
+/* ── Drill-down back button ─────────────── */
+
+.list-drill-back {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 12px;
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.list-drill-back:hover {
+  color: var(--accent);
+  background: var(--surface);
+}
+
 .lists-footer {
   padding: 8px 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
@@ -931,7 +1167,32 @@ body {
   }
 
   .scanner-content {
-    padding: 16px 12px;
+    padding: 12px;
+  }
+
+  #scanner-overlay.lists-open {
+    left: 0;
+  }
+
+  .scanner-body {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .scanner-station {
+    flex-basis: 100%;
+  }
+
+  .scanner-divider {
+    display: none;
+  }
+
+  .scanner-region-nav {
+    flex: 1;
+  }
+
+  .scanner-region-label {
+    min-width: 80px;
   }
 
   .player-actions {

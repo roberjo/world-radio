@@ -7,6 +7,7 @@
   <meta name="description" content="Explore an interactive world map and tune into local radio broadcasts from cities around the globe. Free world radio scanner." />
   <meta name="theme-color" content="#0a0a0f" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📻</text></svg>" />
+  <link rel="stylesheet" href="/src/style.css" />
 </head>
 <body>
   <!-- Header -->
@@ -46,22 +47,47 @@
   <div id="scanner-overlay">
     <div class="scanner-content">
       <div class="scanner-header">
-        <h2>World Radio Scanner</h2>
+        <div class="scanner-title-row">
+          <h2>Scanner</h2>
+          <span id="scanner-badge" class="scanner-badge">Scanning</span>
+        </div>
         <button id="scanner-close" class="scanner-btn-close" title="Close (S)">&times;</button>
       </div>
       <div class="scanner-freq">
         <div id="scanner-freq-line" class="freq-line"></div>
         <div class="freq-ticks"></div>
       </div>
-      <div class="scanner-region-nav">
-        <button id="scanner-prev-region" class="scanner-btn">&laquo; Prev</button>
-        <span id="scanner-region-name" class="scanner-region">Worldwide</span>
-        <button id="scanner-next-region" class="scanner-btn">Next &raquo;</button>
-      </div>
-      <p id="scanner-status" class="scanner-status">Starting scan...</p>
-      <div class="scanner-controls">
-        <button id="scanner-toggle" class="scanner-btn primary">Pause</button>
-        <button id="scanner-skip" class="scanner-btn">Skip &raquo;</button>
+      <div class="scanner-body">
+        <div class="scanner-station" id="scanner-station">
+          <div class="scanner-station-favicon" id="scanner-favicon"></div>
+          <div class="scanner-station-info">
+            <div class="scanner-station-name" id="scanner-station-name">Starting scan...</div>
+            <div class="scanner-station-country" id="scanner-station-country"></div>
+          </div>
+        </div>
+        <div class="scanner-divider"></div>
+        <div class="scanner-region-nav">
+          <button id="scanner-prev-region" class="scanner-nav-btn" title="Previous region">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <div class="scanner-region-label">
+            <span class="scanner-region-prefix">Region</span>
+            <span id="scanner-region-name">Worldwide</span>
+          </div>
+          <button id="scanner-next-region" class="scanner-nav-btn" title="Next region">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="9 6 15 12 9 18"/></svg>
+          </button>
+        </div>
+        <div class="scanner-controls">
+          <button id="scanner-toggle" class="scanner-btn primary">
+            <svg id="scanner-toggle-icon" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            <span id="scanner-toggle-label">Pause</span>
+          </button>
+          <button id="scanner-skip" class="scanner-btn">
+            Skip
+            <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><polygon points="5,4 15,12 5,20"/><rect x="16" y="4" width="3" height="16"/></svg>
+          </button>
+        </div>
       </div>
     </div>
   </div>

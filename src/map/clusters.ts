@@ -15,6 +15,7 @@ let markerLayer: L.LayerGroup;
 let map: L.Map;
 let visibleStations: Station[] = [];
 let currentStationIndex = -1;
+let activeMarker: L.Marker | null = null;
 
 export function initClusters(leafletMap: L.Map): void {
   map = leafletMap;
@@ -93,8 +94,11 @@ export function updateMarkers(): void {
       const currentStation = store.get('currentStation');
       const isActive = currentStation?.stationuuid === props.stationuuid;
 
+      // Skip adding active station to cluster layer — standalone activeMarker handles it
+      if (isActive) return;
+
       const icon = L.divIcon({
-        html: `<div class="station-marker${isActive ? ' active' : ''}"><div class="station-dot"></div></div>`,
+        html: `<div class="station-marker"><div class="station-dot"></div></div>`,
         className: 'station-icon',
         iconSize: L.point(16, 16),
       });
@@ -117,4 +121,39 @@ export function updateMarkers(): void {
       markerLayer.addLayer(marker);
     }
   });
+}
+
+export function updateActiveMarker(): void {
+  if (!map) return;
+
+  // Remove old active marker
+  if (activeMarker) {
+    map.removeLayer(activeMarker);
+    activeMarker = null;
+  }
+
+  const currentStation = store.get('currentStation');
+  if (!currentStation) return;
+
+  const icon = L.divIcon({
+    html: `<div class="station-marker active"><div class="station-dot"></div></div>`,
+    className: 'station-icon',
+    iconSize: L.point(16, 16),
+  });
+
+  activeMarker = L.marker([currentStation.geo_lat, currentStation.geo_long], {
+    icon,
+    zIndexOffset: 1000,
+  });
+
+  activeMarker.bindTooltip(
+    `<strong>${currentStation.name}</strong><br>${currentStation.country}`,
+    { className: 'station-tooltip', direction: 'top', offset: L.point(0, -10) }
+  );
+
+  activeMarker.on('click', () => {
+    audioPlayer.play(currentStation);
+  });
+
+  activeMarker.addTo(map);
 }

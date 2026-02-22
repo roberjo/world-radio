@@ -1,6 +1,6 @@
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { initClusters, loadStations, updateMarkers } from './clusters.ts';
+import { initClusters, loadStations, updateMarkers, updateActiveMarker } from './clusters.ts';
 import { fetchTopStations } from '../api/radio-browser.ts';
 import { store } from '../store/store.ts';
 import { debounce } from '../utils/debounce.ts';
@@ -44,7 +44,10 @@ export async function initMap(): Promise<void> {
   map.on('zoomend', debouncedUpdate);
 
   // Re-render markers when current station changes (to update active marker style)
-  store.subscribe('currentStation', () => updateMarkers());
+  store.subscribe('currentStation', () => {
+    updateMarkers();
+    updateActiveMarker();
+  });
 
   // Load stations
   store.set('loading', true);

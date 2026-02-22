@@ -13,7 +13,22 @@
       "Bash(npx tsc:*)",
       "Bash(npx vite build:*)",
       "Bash(timeout:*)",
-      "Bash(npx vite:*)"
+      "Bash(npx vite:*)",
+      "Bash(npm run build:*)",
+      "Bash(export PATH=\"/Users/johnroberts/.nvm/versions/node/v22.13.1/bin:$PATH\")",
+      "Bash(npx -p typescript tsc:*)",
+      "Bash(node_modules/.bin/vite build:*)",
+      "Bash(./node_modules/.bin/vite build:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(npm run dev:*)",
+      "Bash(export PATH=\"/usr/local/bin:/opt/homebrew/bin:$HOME/.nvm/versions/node/*/bin:$PATH\")",
+      "Bash(echo:*)",
+      "Bash(gh auth status:*)",
+      "Bash(brew install:*)",
+      "Bash(brew cleanup:*)",
+      "Bash(/tmp/gh_extract/gh_2.87.2_macOS_amd64/bin/gh auth status)",
+      "Bash(/tmp/gh_extract/gh_2.87.2_macOS_amd64/bin/gh auth login -h github.com -p https -w)"
     ]
   }
 }
