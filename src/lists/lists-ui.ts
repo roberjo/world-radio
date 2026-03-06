@@ -2,6 +2,7 @@ import { store } from '../store/store.ts';
 import { audioPlayer } from '../player/audio.ts';
 import { showToast } from '../player/player-ui.ts';
 import { buildListUrl } from '../router/router.ts';
+import { loadCustomStations, saveCustomStations } from '../store/persistence.ts';
 import type { Station, StationList, StationListEntry } from '../api/types.ts';
 
 let activeTab: StationList['type'] = 'favorites';
@@ -194,8 +195,9 @@ function playStationByUUID(uuid: string): void {
   const station = store.get('stations').get(uuid);
   if (station) {
     audioPlayer.play(station);
-    // Dispatch flyTo — map module listens for this
-    document.dispatchEvent(new CustomEvent('station-fly-to', { detail: station }));
+    if (station.geo_lat || station.geo_long) {
+      document.dispatchEvent(new CustomEvent('station-fly-to', { detail: station }));
+    }
   } else {
     showToast('Station not loaded — try playing from the map');
   }
@@ -291,6 +293,62 @@ function updateTabUI(): void {
   });
 }
 
+const MY_STATIONS_ID = 'custom:my-stations';
+
+function addToMyStationsList(station: Station): void {
+  const entry: StationListEntry = {
+    stationuuid: station.stationuuid,
+    name: station.name,
+    country: station.country,
+    favicon: station.favicon,
+  };
+  const lists = store.get('stationLists');
+  const exists = lists.find(l => l.id === MY_STATIONS_ID);
+  if (exists) {
+    store.set('stationLists', lists.map(l =>
+      l.id === MY_STATIONS_ID ? { ...l, entries: [...l.entries, entry] } : l
+    ));
+  } else {
+    store.set('stationLists', [...lists, {
+      id: MY_STATIONS_ID,
+      label: 'My Stations',
+      type: 'custom' as const,
+      entries: [entry],
+    }]);
+  }
+  activeTab = 'custom';
+  drillListId = MY_STATIONS_ID;
+  updateTabUI();
+  renderContent();
+}
+
+function addCustomStation(name: string, url: string): void {
+  const uuid = `custom:${crypto.randomUUID()}`;
+  const station: Station = {
+    stationuuid: uuid,
+    name: name.trim(),
+    url, url_resolved: url,
+    homepage: '', favicon: '',
+    country: '', countrycode: '', state: '', city: '', language: '',
+    tags: 'custom',
+    codec: '', bitrate: 0,
+    hls: url.includes('.m3u8') ? 1 : 0,
+    lastcheckok: 1,
+    clickcount: 0, clicktrend: 0, votes: 0,
+    geo_lat: 0, geo_long: 0,
+  };
+
+  const existing = loadCustomStations();
+  saveCustomStations([...existing, station]);
+
+  const stationMap = store.get('stations');
+  stationMap.set(uuid, station);
+  store.set('stations', stationMap);
+
+  addToMyStationsList(station);
+  showToast('Station added');
+}
+
 export function openListsPanelWithSharedList(label: string, entries: StationListEntry[]): void {
   // Add as a temporary custom list
   const id = `shared-${Date.now()}`;
@@ -319,6 +377,43 @@ export function initListsUI(): void {
   addBtn.addEventListener('click', addCurrentStationToList);
   createBtn.addEventListener('click', createCustomList);
   content.addEventListener('click', handleContentClick);
+
+  const addStationUrlBtn = document.getElementById('btn-add-station-url')!;
+  const modal = document.getElementById('modal-add-station')!;
+  const modalClose = document.getElementById('modal-add-station-close')!;
+  const modalForm = document.getElementById('form-add-station') as HTMLFormElement;
+  const modalError = document.getElementById('modal-add-station-error')!;
+
+  addStationUrlBtn.addEventListener('click', () => {
+    (modalForm.elements.namedItem('station-name') as HTMLInputElement).value = '';
+    (modalForm.elements.namedItem('station-url') as HTMLInputElement).value = '';
+    modalError.textContent = '';
+    modal.classList.add('visible');
+    (modalForm.elements.namedItem('station-name') as HTMLInputElement).focus();
+  });
+
+  modalClose.addEventListener('click', () => modal.classList.remove('visible'));
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('visible'); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('visible')) modal.classList.remove('visible');
+  });
+
+  modalForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = ((modalForm.elements.namedItem('station-name') as HTMLInputElement).value).trim();
+    const url  = ((modalForm.elements.namedItem('station-url')  as HTMLInputElement).value).trim();
+    if (!name) { modalError.textContent = 'Please enter a station name.'; return; }
+    if (!url)  { modalError.textContent = 'Please enter a stream URL.'; return; }
+    try {
+      const p = new URL(url);
+      if (p.protocol !== 'http:' && p.protocol !== 'https:') throw new Error();
+    } catch {
+      modalError.textContent = 'URL must start with http:// or https://';
+      return;
+    }
+    addCustomStation(name, url);
+    modal.classList.remove('visible');
+  });
 
   // Tab switching
   document.querySelectorAll('.lists-tab').forEach(tab => {

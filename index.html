@@ -110,6 +110,7 @@
     <div id="lists-content" class="lists-content"></div>
     <div class="lists-footer">
       <button id="btn-create-list" class="lists-action-btn">+ Create list</button>
+      <button id="btn-add-station-url" class="lists-action-btn">+ Add station URL</button>
     </div>
   </div>
 
@@ -149,6 +150,29 @@
 
   <!-- Toast -->
   <div id="toast" class="toast"></div>
+
+  <!-- Add Station URL Modal -->
+  <div id="modal-add-station" class="modal-overlay">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-add-station-title">
+      <div class="modal-header">
+        <h3 id="modal-add-station-title">Add Station URL</h3>
+        <button id="modal-add-station-close" class="modal-close-btn" aria-label="Close">&times;</button>
+      </div>
+      <p class="modal-description">Paste a direct stream URL (MP3, AAC, or HLS .m3u8).</p>
+      <form id="form-add-station" class="modal-form" novalidate>
+        <label class="modal-label" for="input-station-name">Station name</label>
+        <input id="input-station-name" name="station-name" class="modal-input" type="text"
+          placeholder="e.g. KEXP Seattle" autocomplete="off" maxlength="100" />
+        <label class="modal-label" for="input-station-url">Stream URL</label>
+        <input id="input-station-url" name="station-url" class="modal-input" type="url"
+          placeholder="https://…" autocomplete="off" spellcheck="false" />
+        <div id="modal-add-station-error" class="modal-error" aria-live="polite"></div>
+        <div class="modal-actions">
+          <button type="submit" class="modal-submit-btn">Add Station</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <script type="module" src="/src/main.ts"></script>
 </body>

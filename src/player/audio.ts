@@ -84,7 +84,7 @@ class AudioPlayer {
         this.startStreamTimeout();
         await this.audio.play();
       }
-      if (this.playId === currentPlayId) {
+      if (this.playId === currentPlayId && !station.stationuuid.startsWith('custom:')) {
         registerClick(station.stationuuid);
       }
     } catch (e: unknown) {

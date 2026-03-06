@@ -1,11 +1,12 @@
 import './style.css';
 import { initMap, flyToStation } from './map/map.ts';
+import { appendCustomStations } from './map/clusters.ts';
 import { initPlayerUI, showToast } from './player/player-ui.ts';
 import { initScannerUI } from './scanner/scanner-ui.ts';
 import { initListsUI, openListsPanel, openListsPanelWithSharedList } from './lists/lists-ui.ts';
 import { store } from './store/store.ts';
 import { audioPlayer } from './player/audio.ts';
-import { loadLists, saveLists, seedDefaultLists } from './store/persistence.ts';
+import { loadLists, saveLists, seedDefaultLists, loadCustomStations, saveCustomStations, seedC895 } from './store/persistence.ts';
 import { initRouter } from './router/router.ts';
 import { fetchStationByUUID } from './api/radio-browser.ts';
 import type { Route } from './router/router.ts';
@@ -20,14 +21,57 @@ async function init(): Promise<void> {
     saveLists(lists as import('./api/types.ts').StationList[]);
   });
 
+  // Load and seed custom stations before UI init
+  let customStations = loadCustomStations();
+  const seededCustom = seedC895(customStations);
+  if (seededCustom) {
+    customStations = seededCustom;
+    saveCustomStations(customStations);
+  }
+  // Inject into stations Map so they're available for list display
+  const stationMap = store.get('stations');
+  customStations.forEach(s => stationMap.set(s.stationuuid, s));
+  store.set('stations', stationMap);
+
   initPlayerUI();
   initScannerUI();
   initListsUI();
+
+  // If C895 was just seeded, add it to My Stations list
+  if (seededCustom) {
+    const C895_ENTRY: import('./api/types.ts').StationListEntry = {
+      stationuuid: 'custom:c895-seattle',
+      name: 'C89.5 FM — Seattle',
+      country: 'United States of America',
+      favicon: 'https://www.c895.org/wp-content/themes/c895/img/favicon.png',
+    };
+    const currentLists = store.get('stationLists');
+    const myList = currentLists.find(l => l.id === 'custom:my-stations');
+    if (myList) {
+      store.set('stationLists', currentLists.map(l =>
+        l.id === 'custom:my-stations' ? { ...l, entries: [...l.entries, C895_ENTRY] } : l
+      ));
+    } else {
+      store.set('stationLists', [...currentLists, {
+        id: 'custom:my-stations',
+        label: 'My Stations',
+        type: 'custom' as const,
+        entries: [C895_ENTRY],
+      }]);
+    }
+  }
+
   if (window.innerWidth > 640) {
     openListsPanel();
   }
   initSurpriseMe();
   await initMap();
+
+  // Add custom stations with real coordinates to the cluster index
+  const geoCustom = customStations.filter(s => s.geo_lat !== 0 || s.geo_long !== 0);
+  if (geoCustom.length > 0) {
+    appendCustomStations(geoCustom);
+  }
 
   // Seed default genre/country lists from loaded stations (runs once)
   const allStations = Array.from(store.get('stations').values());

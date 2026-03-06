@@ -16,6 +16,7 @@ let map: L.Map;
 let visibleStations: Station[] = [];
 let currentStationIndex = -1;
 let activeMarker: L.Marker | null = null;
+let loadedPoints: GeoJSON.Feature<GeoJSON.Point, StationGeoJSON['properties']>[] = [];
 
 export function initClusters(leafletMap: L.Map): void {
   map = leafletMap;
@@ -31,8 +32,8 @@ export function initClusters(leafletMap: L.Map): void {
   }) as EventListener);
 }
 
-export function loadStations(stations: Station[]): void {
-  const points: GeoJSON.Feature<GeoJSON.Point, StationGeoJSON['properties']>[] = stations.map(s => ({
+function stationToPoint(s: Station): GeoJSON.Feature<GeoJSON.Point, StationGeoJSON['properties']> {
+  return {
     type: 'Feature',
     geometry: { type: 'Point', coordinates: [s.geo_long, s.geo_lat] },
     properties: {
@@ -44,8 +45,23 @@ export function loadStations(stations: Station[]): void {
       favicon: s.favicon,
       clickcount: s.clickcount,
     },
-  }));
-  index.load(points);
+  };
+}
+
+export function loadStations(stations: Station[]): void {
+  loadedPoints = stations
+    .filter(s => s.geo_lat !== 0 || s.geo_long !== 0)
+    .map(stationToPoint);
+  index.load(loadedPoints);
+  updateMarkers();
+}
+
+export function appendCustomStations(stations: Station[]): void {
+  const newPoints = stations
+    .filter(s => s.geo_lat !== 0 || s.geo_long !== 0)
+    .map(stationToPoint);
+  loadedPoints = [...loadedPoints, ...newPoints];
+  index.load(loadedPoints);
   updateMarkers();
 }
 
@@ -134,6 +150,9 @@ export function updateActiveMarker(): void {
 
   const currentStation = store.get('currentStation');
   if (!currentStation) return;
+
+  // Don't place marker at (0, 0) — would drop into the Gulf of Guinea
+  if (currentStation.geo_lat === 0 && currentStation.geo_long === 0) return;
 
   const icon = L.divIcon({
     html: `<div class="station-marker active"><div class="station-dot"></div></div>`,

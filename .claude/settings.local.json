@@ -31,7 +31,13 @@
       "Bash(/tmp/gh_extract/gh_2.87.2_macOS_amd64/bin/gh auth login -h github.com -p https -w)",
       "Bash(git push:*)",
       "Bash(GH=/tmp/gh_extract/gh_2.87.2_macOS_amd64/bin/gh)",
-      "Bash($GH release:*)"
+      "Bash($GH release:*)",
+      "Bash(grep:*)",
+      "Bash(head:*)",
+      "Bash(cat /Users/johnroberts/.claude/projects/-Users-johnroberts-Projects-Untitled-world-radio/1d2fea6c-e42d-4547-a95e-3d64eceb6bac.jsonl | python3 << 'PYTHON'\nimport sys\nimport json\nlines = []\nfor line in sys.stdin:\n    try:\n        obj = json.loads\\(line\\)\n        lines.append\\(obj\\)\n    except:\n        pass\n\n# Look for implementation details\nfor i, obj in enumerate\\(lines\\):\n    if obj.get\\('type'\\) == 'assistant':\n        content = obj.get\\('message', {}\\).get\\('content', []\\)\n        if isinstance\\(content, list\\):\n            for item in content:\n                if isinstance\\(item, dict\\) and 'text' in item:\n                    text = item['text']\n                    if 'custom' in text.lower\\(\\) and \\('modal' in text.lower\\(\\) or 'localStorage' in text.lower\\(\\) or 'uuid' in text.lower\\(\\) or 'favorites' in text.lower\\(\\)\\):\n                        print\\(text[:1500]\\)\n                        print\\('\\\\n=== SEPARATOR ===\\\\n'\\)\nPYTHON)",
+      "Bash(python3:*)",
+      "Bash(/usr/local/bin/npm run:*)",
+      "Bash(export NVM_DIR=\"$HOME/.nvm\" && source \"$NVM_DIR/nvm.sh\" && npm run build 2>&1)"
     ]
   }
 }
