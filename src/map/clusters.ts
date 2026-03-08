@@ -66,7 +66,7 @@ export function appendCustomStations(stations: Station[]): void {
 }
 
 export function updateMarkers(): void {
-  if (!map) return;
+  if (!map || loadedPoints.length === 0) return;
   markerLayer.clearLayers();
 
   const bounds = map.getBounds();

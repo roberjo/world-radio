@@ -6,8 +6,8 @@ const C895_SEEDED_KEY = 'worldradio:c895-seeded';
 const C895_STATION: Station = {
   stationuuid: 'custom:c895-seattle',
   name: 'C89.5 FM — Seattle',
-  url: 'https://c895.streamguys1.com/c895-live-mp3-128',
-  url_resolved: 'https://c895.streamguys1.com/c895-live-mp3-128',
+  url: 'http://knhc-ice.streamguys1.com:8080/live',
+  url_resolved: 'http://knhc-ice.streamguys1.com:8080/live',
   homepage: 'https://www.c895.org',
   favicon: 'https://www.c895.org/wp-content/themes/c895/img/favicon.png',
   country: 'United States of America',
