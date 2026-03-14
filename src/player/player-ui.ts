@@ -1,7 +1,56 @@
 import { store } from '../store/store.ts';
 import { audioPlayer } from './audio.ts';
 import { formatStationInfo, formatTags, formatBitrate } from '../utils/format.ts';
-import type { Station } from '../api/types.ts';
+import type { Station, StationList } from '../api/types.ts';
+import { setStationHash } from '../router/router.ts';
+
+export function showToast(message: string): void {
+  const toast = document.getElementById('toast')!;
+  toast.textContent = message;
+  toast.classList.add('visible');
+  setTimeout(() => toast.classList.remove('visible'), 3000);
+}
+
+function isFavorited(station: Station): boolean {
+  const lists = store.get('stationLists');
+  const favs = lists.find(l => l.id === 'favorites');
+  return favs ? favs.entries.some(e => e.stationuuid === station.stationuuid) : false;
+}
+
+function toggleFavorite(station: Station): void {
+  const lists = [...store.get('stationLists')];
+  const favsIndex = lists.findIndex(l => l.id === 'favorites');
+  if (favsIndex === -1) return;
+
+  const favs: StationList = { ...lists[favsIndex], entries: [...lists[favsIndex].entries] };
+  const existingIndex = favs.entries.findIndex(e => e.stationuuid === station.stationuuid);
+
+  if (existingIndex >= 0) {
+    favs.entries.splice(existingIndex, 1);
+    showToast('Removed from Favorites');
+  } else {
+    favs.entries.push({
+      stationuuid: station.stationuuid,
+      name: station.name,
+      country: station.country,
+      favicon: station.favicon,
+    });
+    showToast('Added to Favorites');
+  }
+
+  lists[favsIndex] = favs;
+  store.set('stationLists', lists);
+}
+
+function updateFavoriteButton(btn: HTMLElement, station: Station | null): void {
+  if (station && isFavorited(station)) {
+    btn.classList.add('favorited');
+    btn.title = 'Remove from Favorites';
+  } else {
+    btn.classList.remove('favorited');
+    btn.title = 'Add to Favorites';
+  }
+}
 
 export function initPlayerUI(): void {
   const playerBar = document.getElementById('player-bar')!;
@@ -12,7 +61,8 @@ export function initPlayerUI(): void {
   const stationMeta = document.getElementById('station-meta')!;
   const volumeSlider = document.getElementById('volume-slider') as HTMLInputElement;
   const freqBar = document.getElementById('freq-bar')!;
-  const toast = document.getElementById('toast')!;
+  const favoriteBtn = document.getElementById('btn-favorite')!;
+  const shareBtn = document.getElementById('btn-share')!;
 
   // Play/Pause
   playBtn.addEventListener('click', () => audioPlayer.toggle());
@@ -23,6 +73,26 @@ export function initPlayerUI(): void {
   });
   nextBtn.addEventListener('click', () => {
     document.dispatchEvent(new CustomEvent('station-navigate', { detail: 1 }));
+  });
+
+  // Favorite button
+  favoriteBtn.addEventListener('click', () => {
+    const station = store.get('currentStation');
+    if (station) toggleFavorite(station);
+  });
+
+  // Share button
+  shareBtn.addEventListener('click', () => {
+    const station = store.get('currentStation');
+    if (!station) return;
+    const url = `${window.location.origin}${window.location.pathname}#/station/${station.stationuuid}`;
+    navigator.clipboard.writeText(url).then(() => {
+      showToast('Station link copied!');
+      shareBtn.classList.add('copied');
+      setTimeout(() => shareBtn.classList.remove('copied'), 1500);
+    }).catch(() => {
+      showToast('Failed to copy link');
+    });
   });
 
   // Volume
@@ -42,11 +112,20 @@ export function initPlayerUI(): void {
       const parts = [...tags];
       if (bitrate) parts.push(bitrate);
       stationMeta.textContent = parts.join(' \u00b7 ');
+      setStationHash(station.stationuuid);
+      updateFavoriteButton(favoriteBtn, station);
     } else {
       playerBar.classList.remove('active');
       stationName.textContent = 'Click a station on the map to start listening';
       stationMeta.textContent = '';
+      updateFavoriteButton(favoriteBtn, null);
     }
+  });
+
+  // Update favorite button when lists change
+  store.subscribe('stationLists', () => {
+    const station = store.get('currentStation');
+    updateFavoriteButton(favoriteBtn, station);
   });
 
   store.subscribe('isPlaying', (playing) => {
@@ -61,11 +140,7 @@ export function initPlayerUI(): void {
   });
 
   store.subscribe('error', (err) => {
-    if (err) {
-      toast.textContent = err as string;
-      toast.classList.add('visible');
-      setTimeout(() => toast.classList.remove('visible'), 3000);
-    }
+    if (err) showToast(err as string);
   });
 
   // Keyboard shortcuts

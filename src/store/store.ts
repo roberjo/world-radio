@@ -17,6 +17,7 @@ class Store {
       scannerRegion: 'all',
       loading: false,
       error: null,
+      stationLists: [],
     };
   }
 

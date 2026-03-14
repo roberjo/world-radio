@@ -84,12 +84,18 @@ class AudioPlayer {
         this.startStreamTimeout();
         await this.audio.play();
       }
-      if (this.playId === currentPlayId) {
+      if (this.playId === currentPlayId && !station.stationuuid.startsWith('custom:')) {
         registerClick(station.stationuuid);
       }
     } catch (e: unknown) {
       if (e instanceof DOMException && e.name === 'AbortError') return;
       if (this.playId !== currentPlayId) return;
+      // Browser blocked autoplay — show a gentle prompt
+      if (e instanceof DOMException && e.name === 'NotAllowedError') {
+        store.set('isBuffering', false);
+        this.showAutoplayPrompt(station);
+        return;
+      }
       this.clearStreamTimeout();
       store.set('isBuffering', false);
       store.set('error', 'Failed to play stream');
@@ -172,6 +178,48 @@ class AudioPlayer {
 
   setVolume(v: number): void {
     store.set('volume', Math.max(0, Math.min(1, v)));
+  }
+
+  private showAutoplayPrompt(station: Station): void {
+    // Remove any existing prompt
+    document.getElementById('autoplay-prompt')?.remove();
+
+    const faviconHtml = station.favicon
+      ? `<img src="${station.favicon}" alt="" class="autoplay-prompt-favicon" onerror="this.style.display='none'">`
+      : '';
+
+    const overlay = document.createElement('div');
+    overlay.id = 'autoplay-prompt';
+    overlay.innerHTML = `
+      <div class="autoplay-prompt-card">
+        <div class="autoplay-prompt-heading">Welcome to World Radio</div>
+        <div class="autoplay-prompt-subheading">Someone shared a station with you</div>
+        <div class="autoplay-prompt-station-card">
+          ${faviconHtml}
+          <div class="autoplay-prompt-station-info">
+            <div class="autoplay-prompt-station-name">${station.name}</div>
+            <div class="autoplay-prompt-station-country">${station.country}</div>
+          </div>
+        </div>
+        <div class="autoplay-prompt-play">
+          <div class="autoplay-prompt-play-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><polygon points="6,3 20,12 6,21"/></svg>
+          </div>
+          <span>Tap anywhere to tune in</span>
+        </div>
+      </div>
+    `;
+
+    const dismiss = () => {
+      overlay.classList.add('dismissing');
+      this.audio.play().catch(() => {});
+      setTimeout(() => overlay.remove(), 300);
+    };
+
+    overlay.addEventListener('click', dismiss);
+    document.body.appendChild(overlay);
+    // Trigger enter animation on next frame
+    requestAnimationFrame(() => overlay.classList.add('visible'));
   }
 }
 

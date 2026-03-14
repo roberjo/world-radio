@@ -1,104 +1,171 @@
 # World Radio
 
-An interactive web application for exploring and listening to radio stations from around the world. Discover local broadcasts through an intuitive map interface, featuring a radio scanner and random station discovery.
+An interactive web app for exploring and listening to radio stations worldwide via a real-time map. Tune into thousands of live broadcasts from every continent — no account required.
 
-![World Radio Screenshot](https://via.placeholder.com/800x400/0a0a0f/ffffff?text=World+Radio+Map)
+**[Live Demo](https://roberjo.github.io/world-radio/)**
 
-## 🌟 Features
+## Features
 
-- **Interactive World Map**: Visualize radio stations geographically using Leaflet maps
-- **Radio Scanner**: Scan through frequencies to discover active stations
-- **Random Station**: Get surprised with a random station from anywhere in the world
-- **Real-time Streaming**: Listen to live radio broadcasts with HLS.js support
-- **Responsive Design**: Works seamlessly on desktop and mobile devices
-- **Fast Search**: Quickly find stations by location or genre
+### Interactive Map
+- Dark-themed Leaflet map with CartoDB tiles
+- 5,000+ geo-located stations loaded on startup via the [Radio Browser API](https://www.radio-browser.info/)
+- Supercluster-based point clustering (radius 60px, up to zoom 14) for smooth performance
+- Click a cluster to expand, click a station to start listening
+- Active station marker stays visible even when surrounding stations are clustered
 
-## 🚀 Live Demo
+### Audio Player
+- Dual-protocol playback: native HTML5 audio with HLS.js fallback for `.m3u8` streams
+- Buffering detection with 15-second timeout and automatic recovery
+- Persistent player bar with play/pause, previous/next, volume control
+- Favorite and share buttons for the current station
 
-[View Live Demo](https://yourusername.github.io/world-radio/)
+### Radio Scanner
+- Auto-play mode that cycles through stations in a geographic region
+- 7 regions: Worldwide, Europe, North America, South America, Africa, Asia, Oceania
+- Smart shuffle: 70% popular stations (by click count) + 30% random discovery
+- 12-second dwell time per station with skip and pause controls
+- Compact horizontal UI that adjusts when the Station Lists panel is open
 
-*Replace `yourusername` with your actual GitHub username*
+### Station Lists
+- Favorites, Genre, Country, and Custom list categories
+- Add the currently playing station to any list
+- Create and delete custom lists
+- Share lists via URL — recipients get a deep link that loads the stations
+- Persisted to localStorage across sessions
+- Panel opens by default on page load
 
-## 🛠️ Tech Stack
+### Deep Linking
+- Share individual stations via URL (`#station=<uuid>`)
+- Share curated lists via URL with encoded station IDs
+- Stations not yet loaded are fetched on demand from the API
 
-- **Frontend**: TypeScript, HTML5, CSS3
-- **Build Tool**: Vite
-- **Mapping**: Leaflet with Supercluster for performance
-- **Streaming**: HLS.js for audio playback
-- **API**: Radio Browser API for station data
+### Keyboard Shortcuts
 
-## 📦 Installation
+| Key | Action |
+|-----|--------|
+| `Space` | Play / Pause |
+| `Left Arrow` | Previous station |
+| `Right Arrow` | Next station |
+| `S` | Toggle scanner |
+| `L` | Toggle station lists |
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/world-radio.git
-   cd world-radio
-   ```
+## Tech Stack
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+| Layer | Technology |
+|-------|-----------|
+| Language | TypeScript (strict mode, ES2020 target) |
+| Build | Vite 7 |
+| Map | Leaflet + CartoDB dark tiles |
+| Clustering | Supercluster |
+| Audio | HTML5 Audio + HLS.js |
+| State | Custom observer-pattern Store (no framework) |
+| Styling | Vanilla CSS with CSS variables, glassmorphism, dark theme |
+| Deployment | GitHub Pages via GitHub Actions |
 
-3. Start the development server:
-   ```bash
-   npm run dev
-   ```
+No frontend framework (React, Vue, etc.) — the entire app is vanilla TypeScript with manual DOM manipulation.
 
-4. Open [http://localhost:5173](http://localhost:5173) in your browser.
+## Project Structure
 
-## 🏗️ Build for Production
-
-```bash
-npm run build
+```
+src/
+├── api/
+│   ├── radio-browser.ts    # API client with 4 fallback servers
+│   └── types.ts            # All TypeScript interfaces
+├── lists/
+│   └── lists-ui.ts         # Station lists panel UI
+├── map/
+│   ├── clusters.ts         # Supercluster integration & markers
+│   └── map.ts              # Leaflet map initialization
+├── player/
+│   ├── audio.ts            # Dual-protocol audio engine
+│   └── player-ui.ts        # Player bar UI & controls
+├── router/
+│   └── router.ts           # Hash-based routing & deep links
+├── scanner/
+│   ├── scanner.ts          # Scanner logic & queue management
+│   └── scanner-ui.ts       # Scanner overlay UI
+├── store/
+│   ├── persistence.ts      # localStorage read/write for lists
+│   └── store.ts            # Observable state store
+├── utils/
+│   ├── debounce.ts         # Debounce utility
+│   ├── format.ts           # Number formatting (cluster labels)
+│   └── geo.ts              # Region definitions & bounds
+├── main.ts                 # App entry point & initialization
+└── style.css               # All styles (dark theme, glassmorphism)
 ```
 
-The built files will be in the `dist/` directory.
+## Getting Started
 
-## 🚀 Deploy to GitHub Pages
+### Prerequisites
 
-1. Build the project:
-   ```bash
-   npm run build
-   ```
+- Node.js 18+
+- npm
 
-2. Commit and push your changes to GitHub.
+### Development
 
-3. Enable GitHub Pages in your repository settings:
-   - Go to Settings → Pages
-   - Select "Deploy from a branch"
-   - Choose the `main` branch and `/dist` folder
-   - Save
+```bash
+# Install dependencies
+npm install
 
-Your site will be available at `https://yourusername.github.io/world-radio/`
+# Start dev server with HMR
+npm run dev
+```
 
-## 📱 Usage
+The dev server starts at `http://localhost:5173`.
 
-- **Browse Map**: Click on map markers to listen to stations
-- **Scanner**: Use the scanner button to tune through frequencies
-- **Surprise Me**: Click for a random station experience
-- **Search**: Filter stations by country, language, or tags
+### Production Build
 
-## 🤝 Contributing
+```bash
+# Type-check and build
+npm run build
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+# Preview the build locally
+npm run preview
+```
 
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+Output goes to `dist/`.
 
-## 📄 License
+## Architecture
 
-This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
+### State Management
 
-## 🙏 Acknowledgments
+A single `AppState` object managed by a custom `Store` class using an observer pattern (Map of listeners). Components subscribe to specific keys and react to changes:
 
-- Radio station data provided by [Radio Browser](https://www.radio-browser.info/)
-- Map tiles courtesy of OpenStreetMap contributors
-- Icons from various open source projects
+```typescript
+store.subscribe('currentStation', (station) => { /* update UI */ });
+store.set('currentStation', newStation);
+```
 
-## 📞 Support
+### Audio Pipeline
 
-If you have any questions or issues, please open an issue on GitHub.
+1. User clicks station (map, list, scanner, or deep link)
+2. `audioPlayer.play(station)` tries native HTML5 `<audio>` first
+3. If the URL ends in `.m3u8` or native playback fails, falls back to HLS.js
+4. Buffering state tracked and surfaced to the UI with a 15-second timeout
+5. Volume synced bidirectionally with the store
+
+### Map Rendering
+
+On every `moveend`/`zoomend` (debounced 100ms):
+1. Query Supercluster for features in the current bounding box at the current zoom
+2. Render clusters as sized circle markers, individual stations as amber dots
+3. Active (playing) station rendered as a standalone marker above the cluster layer so it's always visible
+
+### API
+
+Fetches from the [Radio Browser API](https://api.radio-browser.info/) with 4 hardcoded server URLs and automatic rotation on failure. Loads the top 5,000 stations with geo coordinates on init.
+
+## Deployment
+
+Automated via GitHub Actions (`.github/workflows/deploy.yml`):
+
+1. Push to `main` triggers a build
+2. `npm ci && npm run build` produces the `dist/` folder
+3. Uploaded as a GitHub Pages artifact and deployed
+
+Vite `base` is set to `'./'` for relative asset paths. The `.nojekyll` file prevents GitHub Pages from running Jekyll on the output.
+
+## License
+
+[GPL-3.0](LICENSE)

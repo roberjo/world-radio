@@ -1,18 +1,38 @@
 import { store } from '../store/store.ts';
 import * as scanner from './scanner.ts';
 import { REGIONS } from '../utils/geo.ts';
+import type { Station } from '../api/types.ts';
 
 export function initScannerUI(): void {
   const scannerBtn = document.getElementById('btn-scanner')!;
   const scannerOverlay = document.getElementById('scanner-overlay')!;
   const scannerClose = document.getElementById('scanner-close')!;
   const scannerToggle = document.getElementById('scanner-toggle')!;
+  const scannerToggleLabel = document.getElementById('scanner-toggle-label')!;
+  const scannerToggleIcon = document.getElementById('scanner-toggle-icon')!;
   const scannerSkip = document.getElementById('scanner-skip')!;
   const scannerPrevRegion = document.getElementById('scanner-prev-region')!;
   const scannerNextRegion = document.getElementById('scanner-next-region')!;
   const scannerRegionName = document.getElementById('scanner-region-name')!;
-  const scannerStatus = document.getElementById('scanner-status')!;
+  const scannerBadge = document.getElementById('scanner-badge')!;
+  const scannerStationName = document.getElementById('scanner-station-name')!;
+  const scannerStationCountry = document.getElementById('scanner-station-country')!;
+  const scannerFavicon = document.getElementById('scanner-favicon')!;
   const freqLine = document.getElementById('scanner-freq-line')!;
+  const listsPanel = document.getElementById('lists-panel')!;
+
+  const pauseIconSvg = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+  const playIconSvg = '<polygon points="5,3 19,12 5,21"/>';
+
+  // Sync scanner overlay position with lists panel visibility
+  function syncListsOpen(): void {
+    scannerOverlay.classList.toggle('lists-open', listsPanel.classList.contains('visible'));
+  }
+
+  // Observe lists panel class changes
+  const observer = new MutationObserver(syncListsOpen);
+  observer.observe(listsPanel, { attributes: true, attributeFilter: ['class'] });
+  syncListsOpen();
 
   // Open scanner overlay
   scannerBtn.addEventListener('click', () => {
@@ -55,15 +75,27 @@ export function initScannerUI(): void {
 
   // Update scanner state
   store.subscribe('scannerMode', (mode) => {
-    scannerToggle.textContent = mode === 'scanning' ? 'Pause' : 'Scan';
-    freqLine.classList.toggle('scanning', mode === 'scanning');
+    const isScanning = mode === 'scanning';
+    scannerToggleLabel.textContent = isScanning ? 'Pause' : 'Scan';
+    scannerToggleIcon.innerHTML = isScanning ? pauseIconSvg : playIconSvg;
+    scannerToggle.classList.toggle('primary', isScanning);
+    freqLine.classList.toggle('scanning', isScanning);
+
+    scannerBadge.textContent = isScanning ? 'Scanning' : 'Paused';
+    scannerBadge.classList.toggle('paused', !isScanning);
   });
 
   // Update currently scanning station
   store.subscribe('currentStation', (station) => {
     if (station && store.get('scannerMode') !== 'idle') {
-      const s = station as { name: string; country: string };
-      scannerStatus.textContent = `${s.name} \u2014 ${s.country}`;
+      const s = station as Station;
+      scannerStationName.textContent = s.name;
+      scannerStationCountry.textContent = s.country;
+      if (s.favicon) {
+        scannerFavicon.innerHTML = `<img src="${s.favicon}" alt="" onerror="this.parentElement.textContent='📻'">`;
+      } else {
+        scannerFavicon.textContent = '📻';
+      }
     }
   });
 

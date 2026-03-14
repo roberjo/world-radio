@@ -7,6 +7,7 @@
   <meta name="description" content="Explore an interactive world map and tune into local radio broadcasts from cities around the globe. Free world radio scanner." />
   <meta name="theme-color" content="#0a0a0f" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📻</text></svg>" />
+  <link rel="stylesheet" href="/src/style.css" />
 </head>
 <body>
   <!-- Header -->
@@ -16,6 +17,10 @@
       <h1>World Radio</h1>
     </div>
     <div class="header-right">
+      <button id="btn-lists" class="header-btn" title="Station Lists (L)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+        Lists
+      </button>
       <button id="btn-scanner" class="header-btn" title="Radio Scanner (S)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h4l3-9 4 18 3-9h6"/></svg>
         Scanner
@@ -42,23 +47,70 @@
   <div id="scanner-overlay">
     <div class="scanner-content">
       <div class="scanner-header">
-        <h2>World Radio Scanner</h2>
+        <div class="scanner-title-row">
+          <h2>Scanner</h2>
+          <span id="scanner-badge" class="scanner-badge">Scanning</span>
+        </div>
         <button id="scanner-close" class="scanner-btn-close" title="Close (S)">&times;</button>
       </div>
       <div class="scanner-freq">
         <div id="scanner-freq-line" class="freq-line"></div>
         <div class="freq-ticks"></div>
       </div>
-      <div class="scanner-region-nav">
-        <button id="scanner-prev-region" class="scanner-btn">&laquo; Prev</button>
-        <span id="scanner-region-name" class="scanner-region">Worldwide</span>
-        <button id="scanner-next-region" class="scanner-btn">Next &raquo;</button>
+      <div class="scanner-body">
+        <div class="scanner-station" id="scanner-station">
+          <div class="scanner-station-favicon" id="scanner-favicon"></div>
+          <div class="scanner-station-info">
+            <div class="scanner-station-name" id="scanner-station-name">Starting scan...</div>
+            <div class="scanner-station-country" id="scanner-station-country"></div>
+          </div>
+        </div>
+        <div class="scanner-divider"></div>
+        <div class="scanner-region-nav">
+          <button id="scanner-prev-region" class="scanner-nav-btn" title="Previous region">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <div class="scanner-region-label">
+            <span class="scanner-region-prefix">Region</span>
+            <span id="scanner-region-name">Worldwide</span>
+          </div>
+          <button id="scanner-next-region" class="scanner-nav-btn" title="Next region">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="9 6 15 12 9 18"/></svg>
+          </button>
+        </div>
+        <div class="scanner-controls">
+          <button id="scanner-toggle" class="scanner-btn primary">
+            <svg id="scanner-toggle-icon" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            <span id="scanner-toggle-label">Pause</span>
+          </button>
+          <button id="scanner-skip" class="scanner-btn">
+            Skip
+            <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><polygon points="5,4 15,12 5,20"/><rect x="16" y="4" width="3" height="16"/></svg>
+          </button>
+        </div>
       </div>
-      <p id="scanner-status" class="scanner-status">Starting scan...</p>
-      <div class="scanner-controls">
-        <button id="scanner-toggle" class="scanner-btn primary">Pause</button>
-        <button id="scanner-skip" class="scanner-btn">Skip &raquo;</button>
-      </div>
+    </div>
+  </div>
+
+  <!-- Lists Panel -->
+  <div id="lists-panel">
+    <div class="lists-header">
+      <h2>Station Lists</h2>
+      <button id="lists-close" class="scanner-btn-close" title="Close (L)">&times;</button>
+    </div>
+    <div id="lists-add-current" class="lists-add-current" style="display:none">
+      <button id="btn-add-to-list" class="lists-action-btn">+ Add current station</button>
+    </div>
+    <div class="lists-tabs">
+      <button class="lists-tab active" data-tab="favorites">Favorites</button>
+      <button class="lists-tab" data-tab="genre">Genre</button>
+      <button class="lists-tab" data-tab="country">Country</button>
+      <button class="lists-tab" data-tab="custom">Custom</button>
+    </div>
+    <div id="lists-content" class="lists-content"></div>
+    <div class="lists-footer">
+      <button id="btn-create-list" class="lists-action-btn">+ Create list</button>
+      <button id="btn-add-station-url" class="lists-action-btn">+ Add station URL</button>
     </div>
   </div>
 
@@ -79,6 +131,14 @@
       <div id="station-name" class="station-name">Click a station on the map to start listening</div>
       <div id="station-meta" class="station-meta"></div>
     </div>
+    <div class="player-actions">
+      <button id="btn-favorite" class="player-btn" title="Add to Favorites">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      </button>
+      <button id="btn-share" class="player-btn" title="Copy station link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+      </button>
+    </div>
     <div class="player-volume">
       <svg viewBox="0 0 24 24" fill="currentColor" class="volume-icon"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
       <input type="range" id="volume-slider" min="0" max="100" value="70" class="volume-slider" />
@@ -90,6 +150,29 @@
 
   <!-- Toast -->
   <div id="toast" class="toast"></div>
+
+  <!-- Add Station URL Modal -->
+  <div id="modal-add-station" class="modal-overlay">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-add-station-title">
+      <div class="modal-header">
+        <h3 id="modal-add-station-title">Add Station URL</h3>
+        <button id="modal-add-station-close" class="modal-close-btn" aria-label="Close">&times;</button>
+      </div>
+      <p class="modal-description">Paste a direct stream URL (MP3, AAC, or HLS .m3u8).</p>
+      <form id="form-add-station" class="modal-form" novalidate>
+        <label class="modal-label" for="input-station-name">Station name</label>
+        <input id="input-station-name" name="station-name" class="modal-input" type="text"
+          placeholder="e.g. KEXP Seattle" autocomplete="off" maxlength="100" />
+        <label class="modal-label" for="input-station-url">Stream URL</label>
+        <input id="input-station-url" name="station-url" class="modal-input" type="url"
+          placeholder="https://…" autocomplete="off" spellcheck="false" />
+        <div id="modal-add-station-error" class="modal-error" aria-live="polite"></div>
+        <div class="modal-actions">
+          <button type="submit" class="modal-submit-btn">Add Station</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <script type="module" src="/src/main.ts"></script>
 </body>
