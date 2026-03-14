@@ -13,7 +13,11 @@
       "Bash(npx tsc:*)",
       "Bash(npx vite build:*)",
       "Bash(timeout:*)",
-      "Bash(npx vite:*)"
+      "Bash(npx vite:*)",
+      "Bash(gh api:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push)"
     ]
   }
 }
