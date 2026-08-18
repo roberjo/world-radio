@@ -6,6 +6,7 @@ import { initScannerUI } from './scanner/scanner-ui.ts';
 import { initListsUI, openListsPanel, openListsPanelWithSharedList } from './lists/lists-ui.ts';
 import { initHealthTracking } from './lists/health-check.ts';
 import { initShortcutsHelp } from './utils/shortcuts-help.ts';
+import { getStationOfTheDay } from './utils/station-of-the-day.ts';
 import { store } from './store/store.ts';
 import { audioPlayer } from './player/audio.ts';
 import { loadLists, saveLists, seedDefaultLists, loadCustomStations, saveCustomStations, seedC895 } from './store/persistence.ts';
@@ -69,6 +70,7 @@ async function init(): Promise<void> {
     openListsPanel();
   }
   initSurpriseMe();
+  initStationOfTheDay();
   await initMap();
 
   // Add custom stations with real coordinates to the cluster index
@@ -179,6 +181,17 @@ function initSurpriseMe(): void {
     const random = stations[Math.floor(Math.random() * stations.length)];
     audioPlayer.play(random);
     flyToStation(random);
+  });
+}
+
+function initStationOfTheDay(): void {
+  const btn = document.getElementById('btn-station-of-day')!;
+  btn.addEventListener('click', () => {
+    const stations = Array.from(store.get('stations').values());
+    const pick = getStationOfTheDay(stations);
+    if (!pick) return;
+    audioPlayer.play(pick);
+    flyToStation(pick);
   });
 }
 

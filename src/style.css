@@ -1472,7 +1472,8 @@ body {
     display: none;
   }
 
-  #btn-surprise {
+  #btn-surprise,
+  #btn-station-of-day {
     display: none;
   }
 
