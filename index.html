@@ -217,8 +217,20 @@
         <div class="shortcut-row"><kbd>&rarr;</kbd><span>Next station</span></div>
         <div class="shortcut-row"><kbd>L</kbd><span>Toggle station lists</span></div>
         <div class="shortcut-row"><kbd>S</kbd><span>Toggle scanner</span></div>
+        <div class="shortcut-row"><kbd>&#8984;K</kbd><span>Search stations</span></div>
         <div class="shortcut-row"><kbd>?</kbd><span>Show this help</span></div>
       </div>
+    </div>
+  </div>
+
+  <!-- Command Palette -->
+  <div id="command-palette-overlay" class="modal-overlay">
+    <div class="command-palette-card" role="dialog" aria-modal="true" aria-label="Search stations">
+      <div class="command-palette-input-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="command-palette-input" type="text" placeholder="Search stations by name, country, or genre&hellip;" autocomplete="off" spellcheck="false" />
+      </div>
+      <div id="command-palette-results" class="command-palette-results"></div>
     </div>
   </div>
 
