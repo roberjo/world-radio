@@ -7,6 +7,7 @@ import { initListsUI, openListsPanel, openListsPanelWithSharedList } from './lis
 import { initHealthTracking } from './lists/health-check.ts';
 import { initShortcutsHelp } from './utils/shortcuts-help.ts';
 import { getStationOfTheDay } from './utils/station-of-the-day.ts';
+import { initListeningStats } from './utils/listening-stats.ts';
 import { store } from './store/store.ts';
 import { audioPlayer } from './player/audio.ts';
 import { loadLists, saveLists, seedDefaultLists, loadCustomStations, saveCustomStations, seedC895 } from './store/persistence.ts';
@@ -41,6 +42,7 @@ async function init(): Promise<void> {
   initListsUI();
   initHealthTracking();
   initShortcutsHelp();
+  initListeningStats();
 
   // If C895 was just seeded, add it to My Stations list
   if (seededCustom) {

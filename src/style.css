@@ -780,6 +780,24 @@ body {
   letter-spacing: 0.5px;
 }
 
+.listening-stats {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  padding: 0 16px 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.listening-stats:empty {
+  display: none;
+}
+
+.listening-stats strong {
+  color: var(--accent);
+  font-weight: 600;
+}
+
 .lists-add-current {
   padding: 8px 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
