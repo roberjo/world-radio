@@ -9,6 +9,7 @@ import { appendCustomStations } from '../map/clusters.ts';
 import { testStreamUrl } from '../utils/stream-check.ts';
 import { getHealthStatus, onHealthChange } from './health-check.ts';
 import { parsePlaylist } from '../utils/playlist-parser.ts';
+import { STATION_PACKS, fetchStationPack, type StationPackMeta } from '../utils/station-packs.ts';
 import type { Station, StationList, StationListEntry } from '../api/types.ts';
 
 let activeTab: StationList['type'] = 'favorites';
@@ -383,6 +384,45 @@ async function addCustomStation(
   showToast('Station added');
 }
 
+async function importStationPack(meta: StationPackMeta): Promise<void> {
+  const pack = await fetchStationPack(meta);
+
+  const stationMap = store.get('stations');
+  const existingCustom = await loadCustomStations();
+  const existingIds = new Set(existingCustom.map(s => s.stationuuid));
+  const newToPersist = pack.stations.filter(s => !existingIds.has(s.stationuuid));
+
+  for (const s of pack.stations) stationMap.set(s.stationuuid, s);
+  store.set('stations', stationMap);
+
+  if (newToPersist.length > 0) {
+    await saveCustomStations([...existingCustom, ...newToPersist]);
+    const geoStations = newToPersist.filter(s => s.geo_lat !== 0 || s.geo_long !== 0);
+    if (geoStations.length > 0) appendCustomStations(geoStations);
+  }
+
+  const entries: StationListEntry[] = pack.stations.map(s => ({
+    stationuuid: s.stationuuid,
+    name: s.name,
+    country: s.country,
+    favicon: s.favicon,
+  }));
+
+  activeTab = 'custom';
+  updateTabUI();
+
+  const listId = `pack:${pack.id}`;
+  const lists = store.get('stationLists');
+  const existingIndex = lists.findIndex(l => l.id === listId);
+  if (existingIndex >= 0) {
+    const updated = [...lists];
+    updated[existingIndex] = { ...updated[existingIndex], entries };
+    store.set('stationLists', updated);
+  } else {
+    store.set('stationLists', [...lists, { id: listId, label: pack.label, type: 'custom' as const, entries }]);
+  }
+}
+
 export function openListsPanelWithSharedList(label: string, entries: StationListEntry[]): void {
   // Add as a temporary custom list
   const id = `shared-${Date.now()}`;
@@ -498,6 +538,51 @@ export function initListsUI(): void {
       .finally(() => {
         modalSubmitBtn.disabled = false;
         modalStatus.textContent = '';
+      });
+  });
+
+  // Station packs
+  const browsePacksBtn = document.getElementById('btn-browse-packs')!;
+  const packsModal = document.getElementById('modal-station-packs')!;
+  const packsModalClose = document.getElementById('modal-station-packs-close')!;
+  const packsList = document.getElementById('station-packs-list')!;
+
+  function renderStationPacks(): void {
+    packsList.innerHTML = STATION_PACKS.map(meta => `
+      <div class="station-pack-card" data-pack-id="${meta.id}">
+        <div class="station-pack-label">${escapeHtml(meta.label)} <span class="station-pack-count">(${meta.count} stations)</span></div>
+        <p class="station-pack-description">${escapeHtml(meta.description)}</p>
+        <button type="button" class="station-pack-import-btn" data-pack-id="${meta.id}">Import pack</button>
+      </div>
+    `).join('');
+  }
+
+  browsePacksBtn.addEventListener('click', () => {
+    renderStationPacks();
+    packsModal.classList.add('visible');
+  });
+  packsModalClose.addEventListener('click', () => packsModal.classList.remove('visible'));
+  packsModal.addEventListener('click', (e) => { if (e.target === packsModal) packsModal.classList.remove('visible'); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && packsModal.classList.contains('visible')) packsModal.classList.remove('visible');
+  });
+
+  packsList.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest('.station-pack-import-btn') as HTMLButtonElement | null;
+    if (!btn) return;
+    const meta = STATION_PACKS.find(p => p.id === btn.dataset.packId);
+    if (!meta) return;
+    btn.disabled = true;
+    btn.textContent = 'Importing…';
+    importStationPack(meta)
+      .then(() => {
+        btn.textContent = 'Imported ✓';
+        showToast(`Imported ${meta.label}`);
+      })
+      .catch(() => {
+        btn.disabled = false;
+        btn.textContent = 'Import pack';
+        showToast('Could not import that pack');
       });
   });
 

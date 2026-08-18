@@ -131,6 +131,7 @@
     <div class="lists-footer">
       <button id="btn-create-list" class="lists-action-btn">+ Create list</button>
       <button id="btn-add-station-url" class="lists-action-btn">+ Add station URL</button>
+      <button id="btn-browse-packs" class="lists-action-btn">+ Browse station packs</button>
     </div>
   </div>
 
@@ -243,6 +244,18 @@
         <div class="shortcut-row"><kbd>&#8984;K</kbd><span>Search stations</span></div>
         <div class="shortcut-row"><kbd>?</kbd><span>Show this help</span></div>
       </div>
+    </div>
+  </div>
+
+  <!-- Station Packs -->
+  <div id="modal-station-packs" class="modal-overlay">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-station-packs-title">
+      <div class="modal-header">
+        <h3 id="modal-station-packs-title">Station Packs</h3>
+        <button id="modal-station-packs-close" class="modal-close-btn" aria-label="Close">&times;</button>
+      </div>
+      <p class="modal-description">Hand-picked collections, real stations — one click adds them all to a list.</p>
+      <div id="station-packs-list" class="station-packs-list"></div>
     </div>
   </div>
 
