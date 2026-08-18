@@ -4,6 +4,7 @@ import { formatStationInfo, formatTags, formatBitrate } from '../utils/format.ts
 import type { Station, StationList } from '../api/types.ts';
 import { setStationHash } from '../router/router.ts';
 import { setSleepTimer, onSleepTimerChange } from './sleep-timer.ts';
+import { shareNowPlayingCard } from '../utils/now-playing-card.ts';
 
 export function showToast(message: string): void {
   const toast = document.getElementById('toast')!;
@@ -64,6 +65,7 @@ export function initPlayerUI(): void {
   const freqBar = document.getElementById('freq-bar')!;
   const favoriteBtn = document.getElementById('btn-favorite')!;
   const shareBtn = document.getElementById('btn-share')!;
+  const shareImageBtn = document.getElementById('btn-share-image')!;
   const sleepBtn = document.getElementById('btn-sleep')!;
   const sleepMenu = document.getElementById('sleep-menu')!;
 
@@ -96,6 +98,18 @@ export function initPlayerUI(): void {
     }).catch(() => {
       showToast('Failed to copy link');
     });
+  });
+
+  // Share as image
+  shareImageBtn.addEventListener('click', () => {
+    const station = store.get('currentStation');
+    if (!station) return;
+    const url = `${window.location.origin}${window.location.pathname}#/station/${station.stationuuid}`;
+    shareImageBtn.classList.add('working');
+    shareNowPlayingCard(station, url)
+      .then((ok) => { if (!ok) showToast('Could not create the share image'); })
+      .catch(() => showToast('Could not create the share image'))
+      .finally(() => shareImageBtn.classList.remove('working'));
   });
 
   // Sleep timer

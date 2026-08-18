@@ -1517,6 +1517,11 @@ body {
   color: var(--accent);
 }
 
+#btn-share-image.working {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 /* ── Toast variants ────────────────────── */
 
 .toast.success {
