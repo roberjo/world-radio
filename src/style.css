@@ -938,6 +938,12 @@ body {
   color: var(--text-muted);
 }
 
+.list-row-health-warning {
+  color: var(--red);
+  font-size: 11px;
+  margin-left: 6px;
+}
+
 .list-row-actions {
   display: flex;
   gap: 4px;

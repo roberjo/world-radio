@@ -6,6 +6,8 @@ import { loadCustomStations, saveCustomStations } from '../store/persistence.ts'
 import { escapeHtml, escapeAttr } from '../utils/html.ts';
 import { geocodeLocation } from '../api/geocode.ts';
 import { appendCustomStations } from '../map/clusters.ts';
+import { testStreamUrl } from '../utils/stream-check.ts';
+import { getHealthStatus, onHealthChange } from './health-check.ts';
 import type { Station, StationList, StationListEntry } from '../api/types.ts';
 
 let activeTab: StationList['type'] = 'favorites';
@@ -125,11 +127,15 @@ function renderRow(entry: StationListEntry, listId: string): string {
     ? `<img src="${escapeAttr(entry.favicon)}" alt="" loading="lazy" onerror="this.parentElement.innerHTML='<span class=\\'list-row-favicon-placeholder\\'>📻</span>'">`
     : '<span class="list-row-favicon-placeholder">📻</span>';
 
+  const healthBadge = getHealthStatus(entry.stationuuid) === 'dead'
+    ? '<span class="list-row-health-warning" title="This stream failed to play last time — it may be down">⚠</span>'
+    : '';
+
   return `
     <div class="list-row" data-uuid="${entry.stationuuid}" data-list-id="${listId}">
       <div class="list-row-favicon">${faviconHtml}</div>
       <div class="list-row-info">
-        <div class="list-row-name">${escapeHtml(entry.name)}</div>
+        <div class="list-row-name">${escapeHtml(entry.name)}${healthBadge}</div>
         <div class="list-row-country">${escapeHtml(entry.country)}</div>
       </div>
       <div class="list-row-actions">
@@ -315,29 +321,6 @@ function addToMyStationsList(station: Station): void {
   renderContent();
 }
 
-/** Best-effort: try loading a stream in a hidden audio element to catch obviously-dead URLs.
- *  HLS (.m3u8) isn't natively playable, so those are trusted without a check. */
-function testStreamUrl(url: string): Promise<boolean> {
-  if (url.includes('.m3u8')) return Promise.resolve(true);
-  return new Promise((resolve) => {
-    const audio = new Audio();
-    let done = false;
-    const finish = (ok: boolean): void => {
-      if (done) return;
-      done = true;
-      clearTimeout(timer);
-      audio.src = '';
-      resolve(ok);
-    };
-    const timer = setTimeout(() => finish(false), 4000);
-    audio.addEventListener('canplay', () => finish(true), { once: true });
-    audio.addEventListener('loadedmetadata', () => finish(true), { once: true });
-    audio.addEventListener('error', () => finish(false), { once: true });
-    audio.preload = 'metadata';
-    audio.src = url;
-  });
-}
-
 async function addCustomStation(
   name: string,
   url: string,
@@ -502,6 +485,9 @@ export function initListsUI(): void {
 
   // Re-render when lists change
   store.subscribe('stationLists', () => renderContent());
+
+  // Re-render when a station's playback health changes (see health-check.ts)
+  onHealthChange(() => renderContent());
 
   // Show/hide "add current station" button
   store.subscribe('currentStation', (s) => {
