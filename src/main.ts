@@ -180,4 +180,15 @@ function initSurpriseMe(): void {
   });
 }
 
+function registerServiceWorker(): void {
+  if (!import.meta.env.PROD || !('serviceWorker' in navigator)) return;
+  // GitHub Pages serves this as a project site under a subpath, so the worker URL has
+  // to be resolved relative to where the page actually lives, not the site root.
+  const swUrl = new URL('sw.js', document.baseURI).href;
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register(swUrl).catch(() => {});
+  });
+}
+
+registerServiceWorker();
 init();
