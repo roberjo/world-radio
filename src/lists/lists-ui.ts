@@ -313,7 +313,7 @@ function addToMyStationsList(station: Station): void {
   renderContent();
 }
 
-function addCustomStation(name: string, url: string): void {
+async function addCustomStation(name: string, url: string): Promise<void> {
   const uuid = `custom:${crypto.randomUUID()}`;
   const station: Station = {
     stationuuid: uuid,
@@ -329,8 +329,8 @@ function addCustomStation(name: string, url: string): void {
     geo_lat: 0, geo_long: 0,
   };
 
-  const existing = loadCustomStations();
-  saveCustomStations([...existing, station]);
+  const existing = await loadCustomStations();
+  await saveCustomStations([...existing, station]);
 
   const stationMap = store.get('stations');
   stationMap.set(uuid, station);

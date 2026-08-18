@@ -1,7 +1,10 @@
 import type { Station, StationList, StationListEntry } from '../api/types.ts';
+import { idbGet, idbSet } from './idb.ts';
 
 const CUSTOM_STATIONS_KEY = 'worldradio:custom-stations';
 const C895_SEEDED_KEY = 'worldradio:c895-seeded';
+const STORAGE_KEY = 'worldradio:lists';
+const SEEDED_KEY = 'worldradio:lists-seeded';
 
 const C895_STATION: Station = {
   stationuuid: 'custom:c895-seattle',
@@ -25,50 +28,64 @@ const C895_STATION: Station = {
   geo_long: -122.3321,
 };
 
-export function loadCustomStations(): Station[] {
+// One-time move of existing localStorage data into IndexedDB, so returning users keep
+// their lists and custom stations after the storage backend switch.
+let migrated: Promise<void> | null = null;
+function migrateFromLocalStorage(): Promise<void> {
+  if (!migrated) {
+    migrated = (async () => {
+      for (const key of [CUSTOM_STATIONS_KEY, C895_SEEDED_KEY, STORAGE_KEY, SEEDED_KEY]) {
+        try {
+          const raw = localStorage.getItem(key);
+          if (raw === null) continue;
+          if ((await idbGet(key)) !== undefined) { localStorage.removeItem(key); continue; }
+          let value: unknown;
+          try { value = JSON.parse(raw); } catch { value = raw; }
+          await idbSet(key, value);
+          localStorage.removeItem(key);
+        } catch { /* leave localStorage untouched — will retry next load */ }
+      }
+    })();
+  }
+  return migrated;
+}
+
+export async function loadCustomStations(): Promise<Station[]> {
+  await migrateFromLocalStorage();
   try {
-    const raw = localStorage.getItem(CUSTOM_STATIONS_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw) as Station[];
-      if (Array.isArray(parsed)) return parsed;
-    }
+    const parsed = await idbGet<Station[]>(CUSTOM_STATIONS_KEY);
+    if (Array.isArray(parsed)) return parsed;
   } catch { /* ignore corrupt data */ }
   return [];
 }
 
-export function saveCustomStations(stations: Station[]): void {
+export async function saveCustomStations(stations: Station[]): Promise<void> {
   try {
-    localStorage.setItem(CUSTOM_STATIONS_KEY, JSON.stringify(stations));
-  } catch { /* quota exceeded — silently fail */ }
+    await idbSet(CUSTOM_STATIONS_KEY, stations);
+  } catch { /* storage unavailable — silently fail */ }
 }
 
-export function seedC895(existingCustom: Station[]): Station[] | null {
-  try { if (localStorage.getItem(C895_SEEDED_KEY)) return null; } catch { /* proceed */ }
+export async function seedC895(existingCustom: Station[]): Promise<Station[] | null> {
+  await migrateFromLocalStorage();
+  try { if (await idbGet(C895_SEEDED_KEY)) return null; } catch { /* proceed */ }
   if (existingCustom.some(s => s.stationuuid === 'custom:c895-seattle')) return null;
-  try { localStorage.setItem(C895_SEEDED_KEY, '1'); } catch { /* proceed */ }
+  try { await idbSet(C895_SEEDED_KEY, true); } catch { /* proceed */ }
   return [C895_STATION, ...existingCustom];
 }
 
-const STORAGE_KEY = 'worldradio:lists';
-const SEEDED_KEY = 'worldradio:lists-seeded';
-
-export function loadLists(): StationList[] {
+export async function loadLists(): Promise<StationList[]> {
+  await migrateFromLocalStorage();
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw) as StationList[];
-      if (Array.isArray(parsed)) return ensureFavorites(parsed);
-    }
+    const parsed = await idbGet<StationList[]>(STORAGE_KEY);
+    if (Array.isArray(parsed)) return ensureFavorites(parsed);
   } catch { /* ignore corrupt data */ }
   return ensureFavorites([]);
 }
 
-export function saveLists(lists: StationList[]): void {
+export async function saveLists(lists: StationList[]): Promise<void> {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(lists));
-  } catch {
-    // localStorage quota exceeded — silently fail
-  }
+    await idbSet(STORAGE_KEY, lists);
+  } catch { /* storage unavailable — silently fail */ }
 }
 
 function ensureFavorites(lists: StationList[]): StationList[] {
@@ -131,10 +148,11 @@ function stationToEntry(s: Station): StationListEntry {
 }
 
 /** Build default genre and country lists from the loaded station set. Only runs once. */
-export function seedDefaultLists(stations: Station[], existingLists: StationList[]): StationList[] | null {
+export async function seedDefaultLists(stations: Station[], existingLists: StationList[]): Promise<StationList[] | null> {
   // Only seed once — if user clears lists they stay cleared
+  await migrateFromLocalStorage();
   try {
-    if (localStorage.getItem(SEEDED_KEY)) return null;
+    if (await idbGet(SEEDED_KEY)) return null;
   } catch { /* proceed */ }
 
   // Stations sorted by popularity (already mostly sorted, but be safe)
@@ -175,7 +193,7 @@ export function seedDefaultLists(stations: Station[], existingLists: StationList
   }
 
   try {
-    localStorage.setItem(SEEDED_KEY, '1');
+    await idbSet(SEEDED_KEY, true);
   } catch { /* proceed */ }
 
   return [...existingLists, ...newLists];

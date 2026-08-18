@@ -14,7 +14,7 @@ import type { Station, StationListEntry } from './api/types.ts';
 
 async function init(): Promise<void> {
   // Load persisted lists into store
-  store.set('stationLists', loadLists());
+  store.set('stationLists', await loadLists());
 
   // Persist lists on change
   store.subscribe('stationLists', (lists) => {
@@ -22,11 +22,11 @@ async function init(): Promise<void> {
   });
 
   // Load and seed custom stations before UI init
-  let customStations = loadCustomStations();
-  const seededCustom = seedC895(customStations);
+  let customStations = await loadCustomStations();
+  const seededCustom = await seedC895(customStations);
   if (seededCustom) {
     customStations = seededCustom;
-    saveCustomStations(customStations);
+    await saveCustomStations(customStations);
   }
   // Inject into stations Map so they're available for list display
   const stationMap = store.get('stations');
@@ -75,7 +75,7 @@ async function init(): Promise<void> {
 
   // Seed default genre/country lists from loaded stations (runs once)
   const allStations = Array.from(store.get('stations').values());
-  const seeded = seedDefaultLists(allStations, store.get('stationLists'));
+  const seeded = await seedDefaultLists(allStations, store.get('stationLists'));
   if (seeded) {
     store.set('stationLists', seeded);
   }
