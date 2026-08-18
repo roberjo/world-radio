@@ -1208,6 +1208,39 @@ body {
   background: #d97706;
 }
 
+/* ── Keyboard Shortcuts Help ─── */
+
+.shortcuts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.shortcut-row span {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.shortcut-row kbd {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  padding: 3px 8px;
+  min-width: 20px;
+  text-align: center;
+}
+
 /* ── Player Actions (Favorite + Share) ─── */
 
 .player-actions {

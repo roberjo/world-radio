@@ -5,6 +5,7 @@ import { initPlayerUI, showToast } from './player/player-ui.ts';
 import { initScannerUI } from './scanner/scanner-ui.ts';
 import { initListsUI, openListsPanel, openListsPanelWithSharedList } from './lists/lists-ui.ts';
 import { initHealthTracking } from './lists/health-check.ts';
+import { initShortcutsHelp } from './utils/shortcuts-help.ts';
 import { store } from './store/store.ts';
 import { audioPlayer } from './player/audio.ts';
 import { loadLists, saveLists, seedDefaultLists, loadCustomStations, saveCustomStations, seedC895 } from './store/persistence.ts';
@@ -38,6 +39,7 @@ async function init(): Promise<void> {
   initScannerUI();
   initListsUI();
   initHealthTracking();
+  initShortcutsHelp();
 
   // If C895 was just seeded, add it to My Stations list
   if (seededCustom) {

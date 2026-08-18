@@ -188,6 +188,24 @@
     </div>
   </div>
 
+  <!-- Keyboard Shortcuts Help -->
+  <div id="shortcuts-overlay" class="modal-overlay">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="shortcuts-title">
+      <div class="modal-header">
+        <h3 id="shortcuts-title">Keyboard Shortcuts</h3>
+        <button id="shortcuts-close" class="modal-close-btn" aria-label="Close">&times;</button>
+      </div>
+      <div class="shortcuts-list">
+        <div class="shortcut-row"><kbd>Space</kbd><span>Play / pause</span></div>
+        <div class="shortcut-row"><kbd>&larr;</kbd><span>Previous station</span></div>
+        <div class="shortcut-row"><kbd>&rarr;</kbd><span>Next station</span></div>
+        <div class="shortcut-row"><kbd>L</kbd><span>Toggle station lists</span></div>
+        <div class="shortcut-row"><kbd>S</kbd><span>Toggle scanner</span></div>
+        <div class="shortcut-row"><kbd>?</kbd><span>Show this help</span></div>
+      </div>
+    </div>
+  </div>
+
   <script type="module" src="/src/main.ts"></script>
 </body>
 </html>
