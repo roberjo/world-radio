@@ -4,6 +4,8 @@ import { showToast } from '../player/player-ui.ts';
 import { buildListUrl } from '../router/router.ts';
 import { loadCustomStations, saveCustomStations } from '../store/persistence.ts';
 import { escapeHtml, escapeAttr } from '../utils/html.ts';
+import { geocodeLocation } from '../api/geocode.ts';
+import { appendCustomStations } from '../map/clusters.ts';
 import type { Station, StationList, StationListEntry } from '../api/types.ts';
 
 let activeTab: StationList['type'] = 'favorites';
@@ -313,20 +315,73 @@ function addToMyStationsList(station: Station): void {
   renderContent();
 }
 
-async function addCustomStation(name: string, url: string): Promise<void> {
+/** Best-effort: try loading a stream in a hidden audio element to catch obviously-dead URLs.
+ *  HLS (.m3u8) isn't natively playable, so those are trusted without a check. */
+function testStreamUrl(url: string): Promise<boolean> {
+  if (url.includes('.m3u8')) return Promise.resolve(true);
+  return new Promise((resolve) => {
+    const audio = new Audio();
+    let done = false;
+    const finish = (ok: boolean): void => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      audio.src = '';
+      resolve(ok);
+    };
+    const timer = setTimeout(() => finish(false), 4000);
+    audio.addEventListener('canplay', () => finish(true), { once: true });
+    audio.addEventListener('loadedmetadata', () => finish(true), { once: true });
+    audio.addEventListener('error', () => finish(false), { once: true });
+    audio.preload = 'metadata';
+    audio.src = url;
+  });
+}
+
+async function addCustomStation(
+  name: string,
+  url: string,
+  location: string,
+  tags: string,
+  favicon: string,
+  onStatus: (msg: string) => void,
+): Promise<void> {
   const uuid = `custom:${crypto.randomUUID()}`;
+
+  let geo_lat = 0;
+  let geo_long = 0;
+  let country = '';
+  if (location) {
+    onStatus('Locating on the map…');
+    const geo = await geocodeLocation(location);
+    if (geo) {
+      geo_lat = geo.lat;
+      geo_long = geo.lon;
+      country = geo.country;
+    } else {
+      country = location;
+    }
+  }
+
+  const isHls = url.includes('.m3u8');
+  if (!isHls) {
+    onStatus('Checking stream…');
+    const ok = await testStreamUrl(url);
+    if (!ok) onStatus('Could not verify the stream — saving it anyway.');
+  }
+
   const station: Station = {
     stationuuid: uuid,
     name: name.trim(),
     url, url_resolved: url,
-    homepage: '', favicon: '',
-    country: '', countrycode: '', state: '', city: '', language: '',
-    tags: 'custom',
+    homepage: '', favicon,
+    country, countrycode: '', state: '', city: '', language: '',
+    tags: tags || 'custom',
     codec: '', bitrate: 0,
-    hls: url.includes('.m3u8') ? 1 : 0,
+    hls: isHls ? 1 : 0,
     lastcheckok: 1,
     clickcount: 0, clicktrend: 0, votes: 0,
-    geo_lat: 0, geo_long: 0,
+    geo_lat, geo_long,
   };
 
   const existing = await loadCustomStations();
@@ -335,6 +390,10 @@ async function addCustomStation(name: string, url: string): Promise<void> {
   const stationMap = store.get('stations');
   stationMap.set(uuid, station);
   store.set('stations', stationMap);
+
+  if (geo_lat !== 0 || geo_long !== 0) {
+    appendCustomStations([station]);
+  }
 
   addToMyStationsList(station);
   showToast('Station added');
@@ -374,11 +433,17 @@ export function initListsUI(): void {
   const modalClose = document.getElementById('modal-add-station-close')!;
   const modalForm = document.getElementById('form-add-station') as HTMLFormElement;
   const modalError = document.getElementById('modal-add-station-error')!;
+  const modalStatus = document.getElementById('modal-add-station-status')!;
+  const modalSubmitBtn = modalForm.querySelector('.modal-submit-btn') as HTMLButtonElement;
+
+  const modalFieldNames = ['station-name', 'station-url', 'station-location', 'station-tags', 'station-favicon'];
 
   addStationUrlBtn.addEventListener('click', () => {
-    (modalForm.elements.namedItem('station-name') as HTMLInputElement).value = '';
-    (modalForm.elements.namedItem('station-url') as HTMLInputElement).value = '';
+    for (const field of modalFieldNames) {
+      (modalForm.elements.namedItem(field) as HTMLInputElement).value = '';
+    }
     modalError.textContent = '';
+    modalStatus.textContent = '';
     modal.classList.add('visible');
     (modalForm.elements.namedItem('station-name') as HTMLInputElement).focus();
   });
@@ -391,8 +456,11 @@ export function initListsUI(): void {
 
   modalForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    const name = ((modalForm.elements.namedItem('station-name') as HTMLInputElement).value).trim();
-    const url  = ((modalForm.elements.namedItem('station-url')  as HTMLInputElement).value).trim();
+    const name     = ((modalForm.elements.namedItem('station-name')     as HTMLInputElement).value).trim();
+    const url      = ((modalForm.elements.namedItem('station-url')      as HTMLInputElement).value).trim();
+    const location = ((modalForm.elements.namedItem('station-location') as HTMLInputElement).value).trim();
+    const tags     = ((modalForm.elements.namedItem('station-tags')     as HTMLInputElement).value).trim();
+    const favicon  = ((modalForm.elements.namedItem('station-favicon')  as HTMLInputElement).value).trim();
     if (!name) { modalError.textContent = 'Please enter a station name.'; return; }
     if (!url)  { modalError.textContent = 'Please enter a stream URL.'; return; }
     try {
@@ -402,8 +470,24 @@ export function initListsUI(): void {
       modalError.textContent = 'URL must start with http:// or https://';
       return;
     }
-    addCustomStation(name, url);
-    modal.classList.remove('visible');
+    if (favicon) {
+      try {
+        const p = new URL(favicon);
+        if (p.protocol !== 'http:' && p.protocol !== 'https:') throw new Error();
+      } catch {
+        modalError.textContent = 'Favicon URL must start with http:// or https://';
+        return;
+      }
+    }
+    modalError.textContent = '';
+    modalSubmitBtn.disabled = true;
+    addCustomStation(name, url, location, tags, favicon, (msg) => { modalStatus.textContent = msg; })
+      .then(() => { modal.classList.remove('visible'); })
+      .catch(() => { modalError.textContent = 'Something went wrong adding the station.'; })
+      .finally(() => {
+        modalSubmitBtn.disabled = false;
+        modalStatus.textContent = '';
+      });
   });
 
   // Tab switching

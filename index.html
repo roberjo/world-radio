@@ -158,7 +158,7 @@
         <h3 id="modal-add-station-title">Add Station URL</h3>
         <button id="modal-add-station-close" class="modal-close-btn" aria-label="Close">&times;</button>
       </div>
-      <p class="modal-description">Paste a direct stream URL (MP3, AAC, or HLS .m3u8).</p>
+      <p class="modal-description">Paste a direct stream URL (MP3, AAC, or HLS .m3u8). The optional fields below place it on the map and fill in its details.</p>
       <form id="form-add-station" class="modal-form" novalidate>
         <label class="modal-label" for="input-station-name">Station name</label>
         <input id="input-station-name" name="station-name" class="modal-input" type="text"
@@ -166,6 +166,16 @@
         <label class="modal-label" for="input-station-url">Stream URL</label>
         <input id="input-station-url" name="station-url" class="modal-input" type="url"
           placeholder="https://…" autocomplete="off" spellcheck="false" />
+        <label class="modal-label" for="input-station-location">Location <span class="modal-label-optional">(optional — places it on the map)</span></label>
+        <input id="input-station-location" name="station-location" class="modal-input" type="text"
+          placeholder="e.g. Seattle, USA" autocomplete="off" maxlength="100" />
+        <label class="modal-label" for="input-station-tags">Genre tags <span class="modal-label-optional">(optional)</span></label>
+        <input id="input-station-tags" name="station-tags" class="modal-input" type="text"
+          placeholder="e.g. dance, college radio" autocomplete="off" maxlength="150" />
+        <label class="modal-label" for="input-station-favicon">Favicon URL <span class="modal-label-optional">(optional)</span></label>
+        <input id="input-station-favicon" name="station-favicon" class="modal-input" type="url"
+          placeholder="https://…/favicon.png" autocomplete="off" spellcheck="false" />
+        <div id="modal-add-station-status" class="modal-status" aria-live="polite"></div>
         <div id="modal-add-station-error" class="modal-error" aria-live="polite"></div>
         <div class="modal-actions">
           <button type="submit" class="modal-submit-btn">Add Station</button>
