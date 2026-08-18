@@ -169,6 +169,25 @@ class AudioPlayer {
     store.set('isBuffering', false);
   }
 
+  /** Fades the current stream out over durationMs, then stops playback and restores
+   *  the audio element's volume to the user's configured level for next time. */
+  fadeOutAndStop(durationMs = 4000): void {
+    if (this.audio.paused) return;
+    const steps = 20;
+    const stepMs = durationMs / steps;
+    const startVolume = this.audio.volume;
+    let step = 0;
+    const interval = setInterval(() => {
+      step++;
+      this.audio.volume = Math.max(0, startVolume * (1 - step / steps));
+      if (step >= steps) {
+        clearInterval(interval);
+        this.stop();
+        this.audio.volume = store.get('volume');
+      }
+    }, stepMs);
+  }
+
   toggle(): void {
     if (this.audio.paused && store.get('currentStation')) {
       this.audio.play().catch(() => {});

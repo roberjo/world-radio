@@ -3,6 +3,7 @@ import { audioPlayer } from './audio.ts';
 import { formatStationInfo, formatTags, formatBitrate } from '../utils/format.ts';
 import type { Station, StationList } from '../api/types.ts';
 import { setStationHash } from '../router/router.ts';
+import { setSleepTimer, onSleepTimerChange } from './sleep-timer.ts';
 
 export function showToast(message: string): void {
   const toast = document.getElementById('toast')!;
@@ -63,6 +64,8 @@ export function initPlayerUI(): void {
   const freqBar = document.getElementById('freq-bar')!;
   const favoriteBtn = document.getElementById('btn-favorite')!;
   const shareBtn = document.getElementById('btn-share')!;
+  const sleepBtn = document.getElementById('btn-sleep')!;
+  const sleepMenu = document.getElementById('sleep-menu')!;
 
   // Play/Pause
   playBtn.addEventListener('click', () => audioPlayer.toggle());
@@ -93,6 +96,41 @@ export function initPlayerUI(): void {
     }).catch(() => {
       showToast('Failed to copy link');
     });
+  });
+
+  // Sleep timer
+  const closeSleepMenu = (): void => {
+    sleepMenu.classList.remove('visible');
+    sleepBtn.setAttribute('aria-expanded', 'false');
+  };
+  sleepBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const opening = !sleepMenu.classList.contains('visible');
+    sleepMenu.classList.toggle('visible', opening);
+    sleepBtn.setAttribute('aria-expanded', String(opening));
+  });
+  sleepMenu.addEventListener('click', (e) => e.stopPropagation());
+  document.addEventListener('click', closeSleepMenu);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeSleepMenu();
+  });
+  sleepMenu.querySelectorAll('.sleep-option').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const minutesAttr = (btn as HTMLElement).dataset.minutes!;
+      if (minutesAttr === 'off') {
+        setSleepTimer(null);
+        showToast('Sleep timer turned off');
+      } else {
+        const minutes = Number(minutesAttr);
+        setSleepTimer(minutes);
+        showToast(`Sleep timer set for ${minutes} min`);
+      }
+      closeSleepMenu();
+    });
+  });
+  onSleepTimerChange((endsAt, reason) => {
+    sleepBtn.classList.toggle('active', endsAt !== null);
+    if (reason === 'elapsed') showToast('Sleep timer ended');
   });
 
   // Volume
