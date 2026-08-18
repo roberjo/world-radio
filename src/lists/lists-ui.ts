@@ -3,6 +3,7 @@ import { audioPlayer } from '../player/audio.ts';
 import { showToast } from '../player/player-ui.ts';
 import { buildListUrl } from '../router/router.ts';
 import { loadCustomStations, saveCustomStations } from '../store/persistence.ts';
+import { escapeHtml, escapeAttr } from '../utils/html.ts';
 import type { Station, StationList, StationListEntry } from '../api/types.ts';
 
 let activeTab: StationList['type'] = 'favorites';
@@ -63,7 +64,7 @@ function renderFlatLists(lists: StationList[]): string {
   return lists.map(list => `
     <div class="list-group" data-list-id="${list.id}">
       <div class="list-group-header">
-        <span>${list.label} (${list.entries.length})</span>
+        <span>${escapeHtml(list.label)} (${list.entries.length})</span>
         <div class="list-group-actions">
           <button class="list-group-btn" data-action="share" data-list-id="${list.id}" title="Share list">Share</button>
           ${list.id !== 'favorites' ? `<button class="list-group-btn" data-action="delete-list" data-list-id="${list.id}" title="Delete list">Delete</button>` : ''}
@@ -139,16 +140,6 @@ function renderRow(entry: StationListEntry, listId: string): string {
       </div>
     </div>
   `;
-}
-
-function escapeHtml(s: string): string {
-  const div = document.createElement('div');
-  div.textContent = s;
-  return div.innerHTML;
-}
-
-function escapeAttr(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 function handleContentClick(e: Event): void {

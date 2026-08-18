@@ -4,6 +4,7 @@ import type { Station, StationGeoJSON } from '../api/types.ts';
 import { clusterCountLabel } from '../utils/format.ts';
 import { store } from '../store/store.ts';
 import { audioPlayer } from '../player/audio.ts';
+import { escapeHtml } from '../utils/html.ts';
 
 const index = new Supercluster<StationGeoJSON['properties']>({
   radius: 60,
@@ -123,7 +124,7 @@ export function updateMarkers(): void {
 
       // Tooltip with station name
       marker.bindTooltip(
-        `<strong>${props.name}</strong><br>${props.country}`,
+        `<strong>${escapeHtml(props.name)}</strong><br>${escapeHtml(props.country)}`,
         { className: 'station-tooltip', direction: 'top', offset: L.point(0, -10) }
       );
 
@@ -166,7 +167,7 @@ export function updateActiveMarker(): void {
   });
 
   activeMarker.bindTooltip(
-    `<strong>${currentStation.name}</strong><br>${currentStation.country}`,
+    `<strong>${escapeHtml(currentStation.name)}</strong><br>${escapeHtml(currentStation.country)}`,
     { className: 'station-tooltip', direction: 'top', offset: L.point(0, -10) }
   );
 

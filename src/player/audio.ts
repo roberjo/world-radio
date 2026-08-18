@@ -1,6 +1,7 @@
 import type { Station } from '../api/types.ts';
 import { registerClick } from '../api/radio-browser.ts';
 import { store } from '../store/store.ts';
+import { escapeHtml, escapeAttr } from '../utils/html.ts';
 
 const STREAM_TIMEOUT = 15000;
 
@@ -185,7 +186,7 @@ class AudioPlayer {
     document.getElementById('autoplay-prompt')?.remove();
 
     const faviconHtml = station.favicon
-      ? `<img src="${station.favicon}" alt="" class="autoplay-prompt-favicon" onerror="this.style.display='none'">`
+      ? `<img src="${escapeAttr(station.favicon)}" alt="" class="autoplay-prompt-favicon" onerror="this.style.display='none'">`
       : '';
 
     const overlay = document.createElement('div');
@@ -197,8 +198,8 @@ class AudioPlayer {
         <div class="autoplay-prompt-station-card">
           ${faviconHtml}
           <div class="autoplay-prompt-station-info">
-            <div class="autoplay-prompt-station-name">${station.name}</div>
-            <div class="autoplay-prompt-station-country">${station.country}</div>
+            <div class="autoplay-prompt-station-name">${escapeHtml(station.name)}</div>
+            <div class="autoplay-prompt-station-country">${escapeHtml(station.country)}</div>
           </div>
         </div>
         <div class="autoplay-prompt-play">

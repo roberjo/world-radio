@@ -1,6 +1,7 @@
 import { store } from '../store/store.ts';
 import * as scanner from './scanner.ts';
 import { REGIONS } from '../utils/geo.ts';
+import { escapeAttr } from '../utils/html.ts';
 import type { Station } from '../api/types.ts';
 
 export function initScannerUI(): void {
@@ -92,7 +93,7 @@ export function initScannerUI(): void {
       scannerStationName.textContent = s.name;
       scannerStationCountry.textContent = s.country;
       if (s.favicon) {
-        scannerFavicon.innerHTML = `<img src="${s.favicon}" alt="" onerror="this.parentElement.textContent='📻'">`;
+        scannerFavicon.innerHTML = `<img src="${escapeAttr(s.favicon)}" alt="" onerror="this.parentElement.textContent='📻'">`;
       } else {
         scannerFavicon.textContent = '📻';
       }
