@@ -8,6 +8,7 @@ import { geocodeLocation } from '../api/geocode.ts';
 import { appendCustomStations } from '../map/clusters.ts';
 import { testStreamUrl } from '../utils/stream-check.ts';
 import { getHealthStatus, onHealthChange } from './health-check.ts';
+import { parsePlaylist } from '../utils/playlist-parser.ts';
 import type { Station, StationList, StationListEntry } from '../api/types.ts';
 
 let activeTab: StationList['type'] = 'favorites';
@@ -421,14 +422,41 @@ export function initListsUI(): void {
 
   const modalFieldNames = ['station-name', 'station-url', 'station-location', 'station-tags', 'station-favicon'];
 
+  const togglePlaylistBtn = document.getElementById('btn-toggle-playlist-paste')!;
+  const playlistSection = document.getElementById('playlist-paste-section')!;
+  const playlistInput = document.getElementById('input-playlist-paste') as HTMLTextAreaElement;
+  const playlistParseBtn = document.getElementById('btn-parse-playlist')!;
+  const playlistStatus = document.getElementById('playlist-paste-status')!;
+
   addStationUrlBtn.addEventListener('click', () => {
     for (const field of modalFieldNames) {
       (modalForm.elements.namedItem(field) as HTMLInputElement).value = '';
     }
     modalError.textContent = '';
     modalStatus.textContent = '';
+    playlistInput.value = '';
+    playlistStatus.textContent = '';
+    playlistSection.hidden = true;
     modal.classList.add('visible');
     (modalForm.elements.namedItem('station-name') as HTMLInputElement).focus();
+  });
+
+  togglePlaylistBtn.addEventListener('click', () => {
+    playlistSection.hidden = !playlistSection.hidden;
+    if (!playlistSection.hidden) playlistInput.focus();
+  });
+
+  playlistParseBtn.addEventListener('click', () => {
+    const parsed = parsePlaylist(playlistInput.value);
+    if (!parsed) {
+      playlistStatus.textContent = "Couldn't find a stream URL in that text.";
+      return;
+    }
+    const nameField = modalForm.elements.namedItem('station-name') as HTMLInputElement;
+    const urlField = modalForm.elements.namedItem('station-url') as HTMLInputElement;
+    urlField.value = parsed.url;
+    if (parsed.name && !nameField.value.trim()) nameField.value = parsed.name;
+    playlistStatus.textContent = 'Filled in the name and URL above — review, then add the station.';
   });
 
   modalClose.addEventListener('click', () => modal.classList.remove('visible'));

@@ -198,6 +198,14 @@
         <label class="modal-label" for="input-station-url">Stream URL</label>
         <input id="input-station-url" name="station-url" class="modal-input" type="url"
           placeholder="https://…" autocomplete="off" spellcheck="false" />
+        <button type="button" id="btn-toggle-playlist-paste" class="modal-link-btn">Don't have a direct URL? Paste a playlist instead</button>
+        <div id="playlist-paste-section" class="playlist-paste-section" hidden>
+          <p class="modal-hint">Many independent stations publish a "Listen via app," "Tune In," or M3U/PLS link instead of a raw stream URL. Paste that file's contents below — not its URL, since fetching a third-party file from here usually hits a CORS wall. Look for one on a StreamGuys, Zeno.fm, Radio.co, AzuraCast, Icecast, or Live365 page.</p>
+          <label class="modal-label" for="input-playlist-paste">Playlist contents (M3U, PLS, or XSPF)</label>
+          <textarea id="input-playlist-paste" class="modal-input modal-textarea" rows="4" placeholder="#EXTM3U&#10;#EXTINF:-1,Station Name&#10;https://…"></textarea>
+          <button type="button" id="btn-parse-playlist" class="modal-link-btn">Fill in name &amp; URL from this</button>
+          <div id="playlist-paste-status" class="modal-status" aria-live="polite"></div>
+        </div>
         <label class="modal-label" for="input-station-location">Location <span class="modal-label-optional">(optional — places it on the map)</span></label>
         <input id="input-station-location" name="station-location" class="modal-input" type="text"
           placeholder="e.g. Seattle, USA" autocomplete="off" maxlength="100" />
