@@ -4,12 +4,23 @@ import { initClusters, loadStations, updateMarkers, updateActiveMarker } from '.
 import { fetchTopStations } from '../api/radio-browser.ts';
 import { store } from '../store/store.ts';
 import { debounce } from '../utils/debounce.ts';
+import { getTheme } from '../utils/theme.ts';
 import type { Station } from '../api/types.ts';
 
 let map: L.Map;
+let tileLayer: L.TileLayer;
+
+const TILE_URLS = {
+  dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+  light: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+};
 
 export function getMap(): L.Map {
   return map;
+}
+
+export function setMapTheme(theme: 'dark' | 'light'): void {
+  tileLayer?.setUrl(TILE_URLS[theme]);
 }
 
 export async function initMap(): Promise<void> {
@@ -22,8 +33,7 @@ export async function initMap(): Promise<void> {
     attributionControl: false,
   });
 
-  // Dark tiles
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  tileLayer = L.tileLayer(TILE_URLS[getTheme()], {
     subdomains: 'abcd',
     maxZoom: 19,
   }).addTo(map);

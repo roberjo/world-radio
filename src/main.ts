@@ -1,5 +1,5 @@
 import './style.css';
-import { initMap, flyToStation } from './map/map.ts';
+import { initMap, flyToStation, setMapTheme } from './map/map.ts';
 import { appendCustomStations } from './map/clusters.ts';
 import { initPlayerUI, showToast } from './player/player-ui.ts';
 import { initScannerUI } from './scanner/scanner-ui.ts';
@@ -9,6 +9,7 @@ import { initShortcutsHelp } from './utils/shortcuts-help.ts';
 import { getStationOfTheDay } from './utils/station-of-the-day.ts';
 import { initListeningStats } from './utils/listening-stats.ts';
 import { initCommandPalette } from './utils/command-palette.ts';
+import { initThemeToggle, onThemeChange } from './utils/theme.ts';
 import { store } from './store/store.ts';
 import { audioPlayer } from './player/audio.ts';
 import { loadLists, saveLists, seedDefaultLists, loadCustomStations, saveCustomStations, seedC895 } from './store/persistence.ts';
@@ -45,6 +46,8 @@ async function init(): Promise<void> {
   initShortcutsHelp();
   initListeningStats();
   initCommandPalette();
+  initThemeToggle();
+  onThemeChange(setMapTheme);
 
   // If C895 was just seeded, add it to My Stations list
   if (seededCustom) {
