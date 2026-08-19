@@ -128,6 +128,17 @@ body {
   height: 16px;
 }
 
+@keyframes surprise-roll {
+  0% { transform: rotate(0deg) scale(1); }
+  30% { transform: rotate(-18deg) scale(1.2); }
+  60% { transform: rotate(14deg) scale(1.2); }
+  100% { transform: rotate(0deg) scale(1); }
+}
+
+#btn-surprise.rolling {
+  animation: surprise-roll 0.5s ease;
+}
+
 .icon-moon {
   display: none;
 }

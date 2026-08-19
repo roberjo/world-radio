@@ -190,6 +190,11 @@ function initSurpriseMe(): void {
     const random = stations[Math.floor(Math.random() * stations.length)];
     audioPlayer.play(random);
     flyToStation(random);
+    btn.classList.remove('rolling');
+    // Force a reflow so re-adding the class restarts the animation on repeated clicks
+    void btn.offsetWidth;
+    btn.classList.add('rolling');
+    setTimeout(() => btn.classList.remove('rolling'), 500);
   });
 }
 
