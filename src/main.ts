@@ -5,6 +5,7 @@ import { initPlayerUI, showToast } from './player/player-ui.ts';
 import { initScannerUI } from './scanner/scanner-ui.ts';
 import { initListsUI, openListsPanel, openListsPanelWithSharedList } from './lists/lists-ui.ts';
 import { initHealthTracking } from './lists/health-check.ts';
+import { initResumeQueue } from './utils/resume-queue.ts';
 import { initShortcutsHelp } from './utils/shortcuts-help.ts';
 import { getStationOfTheDay } from './utils/station-of-the-day.ts';
 import { initListeningStats } from './utils/listening-stats.ts';
@@ -43,6 +44,7 @@ async function init(): Promise<void> {
   initScannerUI();
   initListsUI();
   initHealthTracking();
+  initResumeQueue();
   initShortcutsHelp();
   initListeningStats();
   initCommandPalette();
