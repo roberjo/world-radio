@@ -29,8 +29,8 @@
     {
       "stationuuid": "61d90ec1-615e-489b-a175-110076596a3b",
       "name": "WFMU",
-      "url": "https://wfmu.org/wfmu.pls",
-      "url_resolved": "http://stream2.wfmu.org/freeform-128k",
+      "url": "https://stream2.wfmu.org/freeform-128k",
+      "url_resolved": "https://stream2.wfmu.org/freeform-128k",
       "homepage": "https://wfmu.org/",
       "favicon": "https://wfmu.org/images/wfmu_logo_94.gif",
       "country": "The United States Of America",

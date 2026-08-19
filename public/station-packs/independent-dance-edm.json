@@ -121,8 +121,8 @@
     {
       "stationuuid": "ceef0758-99d1-481b-9170-57edec58c7bd",
       "name": "Radio FG at work",
-      "url": "http://stream.rcs.revma.com/2v1zz979n98uv",
-      "url_resolved": "http://stream.rcs.revma.com/2v1zz979n98uv",
+      "url": "https://stream.rcs.revma.com/2v1zz979n98uv",
+      "url_resolved": "https://stream.rcs.revma.com/2v1zz979n98uv",
       "homepage": "https://www.radiofg.com/radios/fg-at-work",
       "favicon": "https://static.mytuner.mobi/media/tvos_radios/116/fg-non-stop.48576e8c.jpg",
       "country": "France",

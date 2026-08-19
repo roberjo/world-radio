@@ -2,6 +2,7 @@ import type { Station } from '../api/types.ts';
 import { registerClick } from '../api/radio-browser.ts';
 import { store } from '../store/store.ts';
 import { escapeHtml, escapeAttr } from '../utils/html.ts';
+import { isLikelyMixedContentBlocked } from '../utils/mixed-content.ts';
 
 const STREAM_TIMEOUT = 15000;
 
@@ -43,7 +44,7 @@ class AudioPlayer {
       store.set('isPlaying', false);
       store.set('isBuffering', false);
       if (store.get('currentStation')) {
-        store.set('error', 'Stream unavailable');
+        store.set('error', this.describeError('Stream unavailable'));
       }
     });
 
@@ -99,8 +100,20 @@ class AudioPlayer {
       }
       this.clearStreamTimeout();
       store.set('isBuffering', false);
-      store.set('error', 'Failed to play stream');
+      store.set('error', this.describeError('Failed to play stream'));
     }
+  }
+
+  /** Appends a clarifying note when the current station's stream is plausibly failing
+   *  because of the http-on-https mixed-content issue, rather than leaving the listener
+   *  to guess why a stream that "should" work never plays. */
+  private describeError(base: string): string {
+    const station = store.get('currentStation');
+    const url = station ? (station.url_resolved || station.url) : '';
+    if (url && isLikelyMixedContentBlocked(url)) {
+      return `${base} — this stream doesn't support secure (https://) connections, which most browsers require`;
+    }
+    return base;
   }
 
   private isHLS(url: string): boolean {
@@ -136,7 +149,7 @@ class AudioPlayer {
     this.timeoutId = setTimeout(() => {
       if (store.get('isBuffering') && !store.get('isPlaying')) {
         store.set('isBuffering', false);
-        store.set('error', 'Stream timed out — try another station');
+        store.set('error', this.describeError('Stream timed out — try another station'));
         this.stopping = true;
         this.audio.pause();
         this.audio.removeAttribute('src');

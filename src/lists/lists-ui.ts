@@ -11,6 +11,7 @@ import { getHealthStatus, onHealthChange } from './health-check.ts';
 import { parsePlaylist } from '../utils/playlist-parser.ts';
 import { STATION_PACKS, fetchStationPack, type StationPackMeta } from '../utils/station-packs.ts';
 import { t, onLanguageChange } from '../i18n/i18n.ts';
+import { isLikelyMixedContentBlocked } from '../utils/mixed-content.ts';
 import type { Station, StationList, StationListEntry } from '../api/types.ts';
 
 let activeTab: StationList['type'] = 'favorites';
@@ -353,7 +354,13 @@ async function addCustomStation(
   if (!isHls) {
     onStatus('Checking stream…');
     const ok = await testStreamUrl(url);
-    if (!ok) onStatus('Could not verify the stream — saving it anyway.');
+    if (!ok) {
+      onStatus(
+        isLikelyMixedContentBlocked(url)
+          ? "Couldn't verify it — this URL is http:// and most browsers block that on a secure site like this one, so it likely won't play. Saving it anyway in case you have an https:// link handy."
+          : 'Could not verify the stream — saving it anyway.'
+      );
+    }
   }
 
   const station: Station = {

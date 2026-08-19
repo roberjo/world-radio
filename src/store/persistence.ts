@@ -9,8 +9,8 @@ const SEEDED_KEY = 'worldradio:lists-seeded';
 const C895_STATION: Station = {
   stationuuid: 'custom:c895-seattle',
   name: 'C89.5 FM — Seattle',
-  url: 'http://knhc-ice.streamguys1.com:8080/live',
-  url_resolved: 'http://knhc-ice.streamguys1.com:8080/live',
+  url: 'https://knhc-ice.streamguys1.com/live',
+  url_resolved: 'https://knhc-ice.streamguys1.com/live',
   homepage: 'https://www.c895.org',
   favicon: 'https://www.c895.org/wp-content/themes/c895/img/favicon.png',
   country: 'United States of America',
@@ -50,11 +50,44 @@ function migrateFromLocalStorage(): Promise<void> {
   return migrated;
 }
 
+/**
+ * Streams whose http:// URL we've since confirmed also work over https:// on the same
+ * origin (verified directly against each server). Browsers silently auto-upgrade
+ * http:// media requests to https:// on an https:// page — if that upgrade has nowhere
+ * to land, the request just hangs instead of failing cleanly, so a plain http:// URL for
+ * these known stations never plays once this app is served over HTTPS (which it always
+ * is in production). Storing the corrected URL as the source of truth isn't enough on
+ * its own, since returning users already have the old URL persisted locally — so this
+ * patches it in place the next time their custom stations load.
+ */
+const KNOWN_URL_FIXES: Record<string, string> = {
+  'custom:c895-seattle': 'https://knhc-ice.streamguys1.com/live',
+  '53ef1268-a1f2-4d6f-beaf-6cec98b8fac8': 'https://stream.ruc.pt/high', // RUC Rádio Universidade de Coimbra
+  'fdf3592c-3b29-45df-b052-80c7cfcbd3fc': 'https://noasrv.caster.fm:10182/live', // 90.9 Ibero
+  '61d90ec1-615e-489b-a175-110076596a3b': 'https://stream2.wfmu.org/freeform-128k', // WFMU
+  'ceef0758-99d1-481b-9170-57edec58c7bd': 'https://stream.rcs.revma.com/2v1zz979n98uv', // Radio FG at work
+};
+
+function applyKnownUrlFixes(stations: Station[]): { stations: Station[]; changed: boolean } {
+  let changed = false;
+  const fixed = stations.map((s) => {
+    const fix = KNOWN_URL_FIXES[s.stationuuid];
+    if (!fix || (s.url === fix && s.url_resolved === fix)) return s;
+    changed = true;
+    return { ...s, url: fix, url_resolved: fix };
+  });
+  return { stations: fixed, changed };
+}
+
 export async function loadCustomStations(): Promise<Station[]> {
   await migrateFromLocalStorage();
   try {
     const parsed = await idbGet<Station[]>(CUSTOM_STATIONS_KEY);
-    if (Array.isArray(parsed)) return parsed;
+    if (Array.isArray(parsed)) {
+      const { stations, changed } = applyKnownUrlFixes(parsed);
+      if (changed) await saveCustomStations(stations);
+      return stations;
+    }
   } catch { /* ignore corrupt data */ }
   return [];
 }

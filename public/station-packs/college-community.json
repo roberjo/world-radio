@@ -52,8 +52,8 @@
     {
       "stationuuid": "53ef1268-a1f2-4d6f-beaf-6cec98b8fac8",
       "name": "RUC Rádio Universidade de Coimbra",
-      "url": "http://stream.ruc.pt/high",
-      "url_resolved": "http://stream.ruc.pt/high",
+      "url": "https://stream.ruc.pt/high",
+      "url_resolved": "https://stream.ruc.pt/high",
       "homepage": "https://ruc.pt/",
       "favicon": "https://www.ruc.pt/apple-icon.png",
       "country": "Portugal",
@@ -167,8 +167,8 @@
     {
       "stationuuid": "fdf3592c-3b29-45df-b052-80c7cfcbd3fc",
       "name": "90.9 Ibero (CDMX) - 90.9 FM - XHUIA-FM - Universidad Iberoamericana - Ciudad de México",
-      "url": "http://noasrv.caster.fm:10182/live",
-      "url_resolved": "http://noasrv.caster.fm:10182/live",
+      "url": "https://noasrv.caster.fm:10182/live",
+      "url_resolved": "https://noasrv.caster.fm:10182/live",
       "homepage": "https://ibero909.fm/",
       "favicon": "https://cdn-profiles.tunein.com/s50611/images/logod.png",
       "country": "Mexico",
