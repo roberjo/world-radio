@@ -10,6 +10,7 @@ import { testStreamUrl } from '../utils/stream-check.ts';
 import { getHealthStatus, onHealthChange } from './health-check.ts';
 import { parsePlaylist } from '../utils/playlist-parser.ts';
 import { STATION_PACKS, fetchStationPack, type StationPackMeta } from '../utils/station-packs.ts';
+import { t, onLanguageChange } from '../i18n/i18n.ts';
 import type { Station, StationList, StationListEntry } from '../api/types.ts';
 
 let activeTab: StationList['type'] = 'favorites';
@@ -40,7 +41,7 @@ function renderContent(): void {
   const lists = getListsForTab(activeTab);
 
   if (lists.length === 0) {
-    content.innerHTML = '<div class="list-empty">No lists yet</div>';
+    content.innerHTML = `<div class="list-empty">${t('lists.noListsYet')}</div>`;
     return;
   }
 
@@ -77,7 +78,7 @@ function renderFlatLists(lists: StationList[]): string {
         </div>
       </div>
       ${list.entries.length === 0
-        ? '<div class="list-empty">No stations</div>'
+        ? `<div class="list-empty">${t('lists.empty')}</div>`
         : list.entries.map(entry => renderRow(entry, list.id)).join('')
       }
     </div>
@@ -117,7 +118,7 @@ function renderDrillDown(list: StationList): string {
         </div>
       </div>
       ${list.entries.length === 0
-        ? '<div class="list-empty">No stations</div>'
+        ? `<div class="list-empty">${t('lists.empty')}</div>`
         : list.entries.map(entry => renderRow(entry, list.id)).join('')
       }
     </div>
@@ -200,7 +201,7 @@ function playStationByUUID(uuid: string): void {
       document.dispatchEvent(new CustomEvent('station-fly-to', { detail: station }));
     }
   } else {
-    showToast('Station not loaded — try playing from the map');
+    showToast(t('lists.stationNotLoaded'));
   }
 }
 
@@ -222,7 +223,7 @@ function shareList(listId: string): void {
   }
   const url = buildListUrl(list.label, ids);
   navigator.clipboard.writeText(url).then(() => {
-    showToast('List link copied!');
+    showToast(t('lists.listLinkCopied'));
   }).catch(() => {
     showToast('Failed to copy link');
   });
@@ -232,7 +233,7 @@ function deleteList(listId: string): void {
   if (drillListId === listId) drillListId = null;
   const lists = store.get('stationLists').filter(l => l.id !== listId);
   store.set('stationLists', lists);
-  showToast('List deleted');
+  showToast(t('lists.listDeleted'));
 }
 
 function addCurrentStationToList(): void {
@@ -381,7 +382,7 @@ async function addCustomStation(
   }
 
   addToMyStationsList(station);
-  showToast('Station added');
+  showToast(t('lists.stationAdded'));
 }
 
 async function importStationPack(meta: StationPackMeta): Promise<void> {
@@ -601,6 +602,9 @@ export function initListsUI(): void {
 
   // Re-render when a station's playback health changes (see health-check.ts)
   onHealthChange(() => renderContent());
+
+  // Re-render when the language changes (list content is regenerated, not data-i18n driven)
+  onLanguageChange(() => renderContent());
 
   // Show/hide "add current station" button
   store.subscribe('currentStation', (s) => {

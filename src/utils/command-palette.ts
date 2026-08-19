@@ -2,6 +2,7 @@ import { store } from '../store/store.ts';
 import { audioPlayer } from '../player/audio.ts';
 import { flyToStation } from '../map/map.ts';
 import { escapeHtml, escapeAttr } from './html.ts';
+import { t } from '../i18n/i18n.ts';
 import type { Station } from '../api/types.ts';
 
 const MAX_RESULTS = 50;
@@ -26,7 +27,7 @@ function renderResults(results: HTMLElement, stations: Station[]): void {
   currentResults = stations;
   selectedIndex = 0;
   if (stations.length === 0) {
-    results.innerHTML = '<div class="command-palette-empty">No stations found</div>';
+    results.innerHTML = `<div class="command-palette-empty">${t('search.noResults')}</div>`;
     return;
   }
   results.innerHTML = stations.map((s, i) => `

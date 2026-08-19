@@ -5,6 +5,7 @@ import type { Station, StationList } from '../api/types.ts';
 import { setStationHash } from '../router/router.ts';
 import { setSleepTimer, onSleepTimerChange } from './sleep-timer.ts';
 import { shareNowPlayingCard } from '../utils/now-playing-card.ts';
+import { t, onLanguageChange } from '../i18n/i18n.ts';
 
 export function showToast(message: string): void {
   const toast = document.getElementById('toast')!;
@@ -29,7 +30,7 @@ function toggleFavorite(station: Station): void {
 
   if (existingIndex >= 0) {
     favs.entries.splice(existingIndex, 1);
-    showToast('Removed from Favorites');
+    showToast(t('toast.favoriteRemoved'));
   } else {
     favs.entries.push({
       stationuuid: station.stationuuid,
@@ -37,7 +38,7 @@ function toggleFavorite(station: Station): void {
       country: station.country,
       favicon: station.favicon,
     });
-    showToast('Added to Favorites');
+    showToast(t('toast.favoriteAdded'));
   }
 
   lists[favsIndex] = favs;
@@ -47,10 +48,10 @@ function toggleFavorite(station: Station): void {
 function updateFavoriteButton(btn: HTMLElement, station: Station | null): void {
   if (station && isFavorited(station)) {
     btn.classList.add('favorited');
-    btn.title = 'Remove from Favorites';
+    btn.title = t('player.favorite.remove');
   } else {
     btn.classList.remove('favorited');
-    btn.title = 'Add to Favorites';
+    btn.title = t('player.favorite.add');
   }
 }
 
@@ -92,7 +93,7 @@ export function initPlayerUI(): void {
     if (!station) return;
     const url = `${window.location.origin}${window.location.pathname}#/station/${station.stationuuid}`;
     navigator.clipboard.writeText(url).then(() => {
-      showToast('Station link copied!');
+      showToast(t('toast.stationLinkCopied'));
       shareBtn.classList.add('copied');
       setTimeout(() => shareBtn.classList.remove('copied'), 1500);
     }).catch(() => {
@@ -133,18 +134,18 @@ export function initPlayerUI(): void {
       const minutesAttr = (btn as HTMLElement).dataset.minutes!;
       if (minutesAttr === 'off') {
         setSleepTimer(null);
-        showToast('Sleep timer turned off');
+        showToast(t('sleep.off.toast'));
       } else {
         const minutes = Number(minutesAttr);
         setSleepTimer(minutes);
-        showToast(`Sleep timer set for ${minutes} min`);
+        showToast(t('sleep.setFor').replace('{minutes}', String(minutes)));
       }
       closeSleepMenu();
     });
   });
   onSleepTimerChange((endsAt, reason) => {
     sleepBtn.classList.toggle('active', endsAt !== null);
-    if (reason === 'elapsed') showToast('Sleep timer ended');
+    if (reason === 'elapsed') showToast(t('sleep.ended'));
   });
 
   // Volume
@@ -168,7 +169,7 @@ export function initPlayerUI(): void {
       updateFavoriteButton(favoriteBtn, station);
     } else {
       playerBar.classList.remove('active');
-      stationName.textContent = 'Click a station on the map to start listening';
+      stationName.textContent = t('player.placeholder');
       stationMeta.textContent = '';
       updateFavoriteButton(favoriteBtn, null);
     }
@@ -178,6 +179,12 @@ export function initPlayerUI(): void {
   store.subscribe('stationLists', () => {
     const station = store.get('currentStation');
     updateFavoriteButton(favoriteBtn, station);
+  });
+
+  // Re-apply anything this module owns when the language changes
+  onLanguageChange(() => {
+    if (!store.get('currentStation')) stationName.textContent = t('player.placeholder');
+    updateFavoriteButton(favoriteBtn, store.get('currentStation'));
   });
 
   store.subscribe('isPlaying', (playing) => {

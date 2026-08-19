@@ -11,6 +11,7 @@ import { getStationOfTheDay } from './utils/station-of-the-day.ts';
 import { initListeningStats } from './utils/listening-stats.ts';
 import { initCommandPalette } from './utils/command-palette.ts';
 import { initThemeToggle, onThemeChange } from './utils/theme.ts';
+import { initI18n } from './i18n/i18n.ts';
 import { store } from './store/store.ts';
 import { audioPlayer } from './player/audio.ts';
 import { loadLists, saveLists, seedDefaultLists, loadCustomStations, saveCustomStations, seedC895 } from './store/persistence.ts';
@@ -49,6 +50,7 @@ async function init(): Promise<void> {
   initListeningStats();
   initCommandPalette();
   initThemeToggle();
+  initI18n();
   onThemeChange(setMapTheme);
 
   // If C895 was just seeded, add it to My Stations list

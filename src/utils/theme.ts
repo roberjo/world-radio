@@ -1,3 +1,5 @@
+import { t, onLanguageChange } from '../i18n/i18n.ts';
+
 export type Theme = 'dark' | 'light';
 
 const THEME_KEY = 'worldradio:theme';
@@ -30,7 +32,7 @@ export function setTheme(theme: Theme): void {
 export function initThemeToggle(): void {
   const btn = document.getElementById('btn-theme-toggle')!;
   const updateLabel = (theme: Theme): void => {
-    const label = theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme';
+    const label = theme === 'light' ? t('header.themeToDark') : t('header.themeToLight');
     btn.title = label;
     btn.setAttribute('aria-label', label);
   };
@@ -40,4 +42,5 @@ export function initThemeToggle(): void {
     setTheme(next);
     updateLabel(next);
   });
+  onLanguageChange(() => updateLabel(getTheme()));
 }

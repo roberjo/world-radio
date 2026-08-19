@@ -2,6 +2,7 @@ import { store } from '../store/store.ts';
 import * as scanner from './scanner.ts';
 import { REGIONS } from '../utils/geo.ts';
 import { escapeAttr } from '../utils/html.ts';
+import { t, onLanguageChange } from '../i18n/i18n.ts';
 import type { Station } from '../api/types.ts';
 
 export function initScannerUI(): void {
@@ -71,19 +72,28 @@ export function initScannerUI(): void {
   // Update region display
   store.subscribe('scannerRegion', (region) => {
     const r = REGIONS[region as string];
-    scannerRegionName.textContent = r ? r.name : 'Worldwide';
+    scannerRegionName.textContent = r ? r.name : t('scanner.worldwide');
   });
 
   // Update scanner state
   store.subscribe('scannerMode', (mode) => {
     const isScanning = mode === 'scanning';
-    scannerToggleLabel.textContent = isScanning ? 'Pause' : 'Scan';
+    scannerToggleLabel.textContent = isScanning ? t('scanner.pause') : t('scanner.scan');
     scannerToggleIcon.innerHTML = isScanning ? pauseIconSvg : playIconSvg;
     scannerToggle.classList.toggle('primary', isScanning);
     freqLine.classList.toggle('scanning', isScanning);
 
-    scannerBadge.textContent = isScanning ? 'Scanning' : 'Paused';
+    scannerBadge.textContent = isScanning ? t('scanner.scanning') : t('scanner.paused');
     scannerBadge.classList.toggle('paused', !isScanning);
+  });
+
+  onLanguageChange(() => {
+    const mode = store.get('scannerMode');
+    const isScanning = mode === 'scanning';
+    scannerToggleLabel.textContent = isScanning ? t('scanner.pause') : t('scanner.scan');
+    scannerBadge.textContent = isScanning ? t('scanner.scanning') : t('scanner.paused');
+    const region = REGIONS[store.get('scannerRegion')];
+    scannerRegionName.textContent = region ? region.name : t('scanner.worldwide');
   });
 
   // Update currently scanning station

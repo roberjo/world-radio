@@ -31,18 +31,19 @@
     <div class="header-right">
       <button id="btn-lists" class="header-btn" title="Station Lists (L)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
-        Lists
+        <span data-i18n="header.lists">Lists</span>
       </button>
       <button id="btn-scanner" class="header-btn" title="Radio Scanner (S)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h4l3-9 4 18 3-9h6"/></svg>
-        Scanner
+        <span data-i18n="header.scanner">Scanner</span>
       </button>
       <button id="btn-station-of-day" class="header-btn" title="Station of the Day — the same pick for everyone today">
-        📅 Today's Pick
+        📅 <span data-i18n="header.stationOfDay">Today's Pick</span>
       </button>
       <button id="btn-surprise" class="header-btn" title="Random Station">
-        🎲 Surprise Me
+        🎲 <span data-i18n="header.surpriseMe">Surprise Me</span>
       </button>
+      <select id="language-select" class="header-btn language-select" aria-label="Language" title="Language"></select>
       <button id="btn-theme-toggle" class="header-btn" title="Switch to light theme" aria-label="Switch to light theme">
         <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
         <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
@@ -67,7 +68,7 @@
     <div class="scanner-content">
       <div class="scanner-header">
         <div class="scanner-title-row">
-          <h2>Scanner</h2>
+          <h2 data-i18n="scanner.title">Scanner</h2>
           <span id="scanner-badge" class="scanner-badge">Scanning</span>
         </div>
         <button id="scanner-close" class="scanner-btn-close" title="Close (S)" aria-label="Close scanner">&times;</button>
@@ -80,7 +81,7 @@
         <div class="scanner-station" id="scanner-station">
           <div class="scanner-station-favicon" id="scanner-favicon"></div>
           <div class="scanner-station-info">
-            <div class="scanner-station-name" id="scanner-station-name">Starting scan...</div>
+            <div class="scanner-station-name" id="scanner-station-name" data-i18n="scanner.starting">Starting scan...</div>
             <div class="scanner-station-country" id="scanner-station-country"></div>
           </div>
         </div>
@@ -90,7 +91,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
           <div class="scanner-region-label">
-            <span class="scanner-region-prefix">Region</span>
+            <span class="scanner-region-prefix" data-i18n="scanner.region">Region</span>
             <span id="scanner-region-name">Worldwide</span>
           </div>
           <button id="scanner-next-region" class="scanner-nav-btn" title="Next region" aria-label="Next region">
@@ -103,7 +104,7 @@
             <span id="scanner-toggle-label">Pause</span>
           </button>
           <button id="scanner-skip" class="scanner-btn">
-            Skip
+            <span data-i18n="scanner.skip">Skip</span>
             <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><polygon points="5,4 15,12 5,20"/><rect x="16" y="4" width="3" height="16"/></svg>
           </button>
         </div>
@@ -114,24 +115,24 @@
   <!-- Lists Panel -->
   <div id="lists-panel">
     <div class="lists-header">
-      <h2>Station Lists</h2>
+      <h2 data-i18n="lists.title">Station Lists</h2>
       <button id="lists-close" class="scanner-btn-close" title="Close (L)" aria-label="Close station lists">&times;</button>
     </div>
     <div id="listening-stats" class="listening-stats"></div>
     <div id="lists-add-current" class="lists-add-current" style="display:none">
-      <button id="btn-add-to-list" class="lists-action-btn">+ Add current station</button>
+      <button id="btn-add-to-list" class="lists-action-btn" data-i18n="lists.addCurrent">+ Add current station</button>
     </div>
     <div class="lists-tabs">
-      <button class="lists-tab active" data-tab="favorites">Favorites</button>
-      <button class="lists-tab" data-tab="genre">Genre</button>
-      <button class="lists-tab" data-tab="country">Country</button>
-      <button class="lists-tab" data-tab="custom">Custom</button>
+      <button class="lists-tab active" data-tab="favorites" data-i18n="lists.tab.favorites">Favorites</button>
+      <button class="lists-tab" data-tab="genre" data-i18n="lists.tab.genre">Genre</button>
+      <button class="lists-tab" data-tab="country" data-i18n="lists.tab.country">Country</button>
+      <button class="lists-tab" data-tab="custom" data-i18n="lists.tab.custom">Custom</button>
     </div>
     <div id="lists-content" class="lists-content"></div>
     <div class="lists-footer">
-      <button id="btn-create-list" class="lists-action-btn">+ Create list</button>
-      <button id="btn-add-station-url" class="lists-action-btn">+ Add station URL</button>
-      <button id="btn-browse-packs" class="lists-action-btn">+ Browse station packs</button>
+      <button id="btn-create-list" class="lists-action-btn" data-i18n="lists.createList">+ Create list</button>
+      <button id="btn-add-station-url" class="lists-action-btn" data-i18n="lists.addStationUrl">+ Add station URL</button>
+      <button id="btn-browse-packs" class="lists-action-btn" data-i18n="lists.browsePacks">+ Browse station packs</button>
     </div>
   </div>
 
@@ -149,35 +150,35 @@
       </button>
     </div>
     <div class="player-info">
-      <div id="station-name" class="station-name">Click a station on the map to start listening</div>
+      <div id="station-name" class="station-name" data-i18n="player.placeholder">Click a station on the map to start listening</div>
       <div id="station-meta" class="station-meta"></div>
     </div>
     <div class="player-actions">
       <div class="player-sleep-wrap">
-        <button id="btn-sleep" class="player-btn" title="Sleep timer" aria-label="Sleep timer" aria-haspopup="true" aria-expanded="false">
+        <button id="btn-sleep" class="player-btn" title="Sleep timer" aria-label="Sleep timer" aria-haspopup="true" aria-expanded="false" data-i18n-title="player.sleepTimer">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
         </button>
         <div id="sleep-menu" class="sleep-menu">
-          <button class="sleep-option" data-minutes="15">15 min</button>
-          <button class="sleep-option" data-minutes="30">30 min</button>
-          <button class="sleep-option" data-minutes="45">45 min</button>
-          <button class="sleep-option" data-minutes="60">60 min</button>
-          <button class="sleep-option sleep-option-off" data-minutes="off">Turn off</button>
+          <button class="sleep-option" data-minutes="15" data-i18n="sleep.15">15 min</button>
+          <button class="sleep-option" data-minutes="30" data-i18n="sleep.30">30 min</button>
+          <button class="sleep-option" data-minutes="45" data-i18n="sleep.45">45 min</button>
+          <button class="sleep-option" data-minutes="60" data-i18n="sleep.60">60 min</button>
+          <button class="sleep-option sleep-option-off" data-minutes="off" data-i18n="sleep.off">Turn off</button>
         </div>
       </div>
       <button id="btn-favorite" class="player-btn" title="Add to Favorites" aria-label="Add to favorites">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
       </button>
-      <button id="btn-share" class="player-btn" title="Copy station link" aria-label="Copy station link">
+      <button id="btn-share" class="player-btn" title="Copy station link" aria-label="Copy station link" data-i18n-title="player.share.link">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
       </button>
-      <button id="btn-share-image" class="player-btn" title="Share as image" aria-label="Share as image">
+      <button id="btn-share-image" class="player-btn" title="Share as image" aria-label="Share as image" data-i18n-title="player.share.image">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
       </button>
     </div>
     <div class="player-volume">
       <svg viewBox="0 0 24 24" fill="currentColor" class="volume-icon" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
-      <input type="range" id="volume-slider" min="0" max="100" value="70" class="volume-slider" aria-label="Volume" />
+      <input type="range" id="volume-slider" min="0" max="100" value="70" class="volume-slider" aria-label="Volume" data-i18n-title="player.volume" />
     </div>
     <div id="freq-bar" class="freq-bar">
       <div class="freq-bar-inner"></div>
@@ -232,17 +233,17 @@
   <div id="shortcuts-overlay" class="modal-overlay">
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="shortcuts-title">
       <div class="modal-header">
-        <h3 id="shortcuts-title">Keyboard Shortcuts</h3>
+        <h3 id="shortcuts-title" data-i18n="shortcuts.title">Keyboard Shortcuts</h3>
         <button id="shortcuts-close" class="modal-close-btn" aria-label="Close">&times;</button>
       </div>
       <div class="shortcuts-list">
-        <div class="shortcut-row"><kbd>Space</kbd><span>Play / pause</span></div>
-        <div class="shortcut-row"><kbd>&larr;</kbd><span>Previous station</span></div>
-        <div class="shortcut-row"><kbd>&rarr;</kbd><span>Next station</span></div>
-        <div class="shortcut-row"><kbd>L</kbd><span>Toggle station lists</span></div>
-        <div class="shortcut-row"><kbd>S</kbd><span>Toggle scanner</span></div>
-        <div class="shortcut-row"><kbd>&#8984;K</kbd><span>Search stations</span></div>
-        <div class="shortcut-row"><kbd>?</kbd><span>Show this help</span></div>
+        <div class="shortcut-row"><kbd>Space</kbd><span data-i18n="shortcuts.playPause">Play / pause</span></div>
+        <div class="shortcut-row"><kbd>&larr;</kbd><span data-i18n="shortcuts.prevStation">Previous station</span></div>
+        <div class="shortcut-row"><kbd>&rarr;</kbd><span data-i18n="shortcuts.nextStation">Next station</span></div>
+        <div class="shortcut-row"><kbd>L</kbd><span data-i18n="shortcuts.toggleLists">Toggle station lists</span></div>
+        <div class="shortcut-row"><kbd>S</kbd><span data-i18n="shortcuts.toggleScanner">Toggle scanner</span></div>
+        <div class="shortcut-row"><kbd>&#8984;K</kbd><span data-i18n="shortcuts.search">Search stations</span></div>
+        <div class="shortcut-row"><kbd>?</kbd><span data-i18n="shortcuts.showHelp">Show this help</span></div>
       </div>
     </div>
   </div>
@@ -264,7 +265,7 @@
     <div class="command-palette-card" role="dialog" aria-modal="true" aria-label="Search stations">
       <div class="command-palette-input-row">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input id="command-palette-input" type="text" placeholder="Search stations by name, country, or genre&hellip;" autocomplete="off" spellcheck="false" />
+        <input id="command-palette-input" type="text" placeholder="Search stations by name, country, or genre&hellip;" autocomplete="off" spellcheck="false" data-i18n-placeholder="search.placeholder" />
       </div>
       <div id="command-palette-results" class="command-palette-results"></div>
     </div>
