@@ -7,9 +7,10 @@ export default defineConfig({
     outDir: 'dist',
     rollupOptions: {
       output: {
-        manualChunks: {
-          leaflet: ['leaflet'],
-          supercluster: ['supercluster'],
+        // Function form: Vite 8 (Rolldown) no longer accepts the object form.
+        manualChunks(id) {
+          if (id.includes('/node_modules/leaflet/')) return 'leaflet';
+          if (/\/node_modules\/(supercluster|kdbush)\//.test(id)) return 'supercluster';
         },
       },
     },
