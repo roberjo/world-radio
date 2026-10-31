@@ -16,7 +16,7 @@ import { store } from './store/store.ts';
 import { audioPlayer } from './player/audio.ts';
 import { loadLists, saveLists, seedDefaultLists, loadCustomStations, saveCustomStations, seedC895 } from './store/persistence.ts';
 import { initRouter } from './router/router.ts';
-import { fetchStationByUUID } from './api/radio-browser.ts';
+import { fetchStationByUUID, fetchStationsByUUIDs } from './api/radio-browser.ts';
 import type { Route } from './router/router.ts';
 import type { Station, StationListEntry } from './api/types.ts';
 
@@ -148,19 +148,11 @@ async function handleListRoute(label: string, ids: string[]): Promise<void> {
   const stationMap = store.get('stations');
   const entries: StationListEntry[] = [];
 
-  // Fetch missing stations (limit concurrency to 5)
+  // Fetch missing stations in batched byuuid requests
   const missingIds = ids.filter(id => !stationMap.has(id));
-  const BATCH_SIZE = 5;
-  for (let i = 0; i < missingIds.length; i += BATCH_SIZE) {
-    const batch = missingIds.slice(i, i + BATCH_SIZE);
-    const results = await Promise.all(batch.map(id => fetchStationByUUID(id)));
-    results.forEach(s => {
-      if (s) {
-        stationMap.set(s.stationuuid, s);
-      }
-    });
-  }
   if (missingIds.length > 0) {
+    const fetched = await fetchStationsByUUIDs(missingIds);
+    fetched.forEach(s => stationMap.set(s.stationuuid, s));
     store.set('stations', stationMap);
   }
 

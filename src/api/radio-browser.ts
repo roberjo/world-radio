@@ -93,6 +93,26 @@ export async function fetchStationByUUID(uuid: string): Promise<Station | null> 
   }
 }
 
+/** Max UUIDs per byuuid request — keeps the query string comfortably under URL limits. */
+const UUID_BATCH_SIZE = 100;
+
+/** Look up many stations in as few requests as possible. Unknown UUIDs are simply
+ *  absent from the result. */
+export async function fetchStationsByUUIDs(uuids: string[]): Promise<Station[]> {
+  const batches: string[][] = [];
+  for (let i = 0; i < uuids.length; i += UUID_BATCH_SIZE) {
+    batches.push(uuids.slice(i, i + UUID_BATCH_SIZE));
+  }
+  try {
+    const results = await Promise.all(batches.map(batch =>
+      apiFetch<Station[]>(`/json/stations/byuuid?uuids=${batch.map(encodeURIComponent).join(',')}`)
+    ));
+    return results.flat();
+  } catch {
+    return [];
+  }
+}
+
 export function registerClick(stationuuid: string): void {
   void orderedServers().then(([server]) =>
     fetch(`${server}/json/url/${encodeURIComponent(stationuuid)}`, { method: 'POST' })
