@@ -8,19 +8,34 @@ import { getTheme } from '../utils/theme.ts';
 import type { Station } from '../api/types.ts';
 
 let map: L.Map;
-let tileLayer: L.TileLayer;
+let baseLayer: L.TileLayer;
+let labelLayer: L.TileLayer;
 
+// Esri Canvas basemaps: keyless, and visually close to the CARTO dark/light styles
+// this app used until CARTO started requiring an API key (tiles came back watermarked
+// "API KEY REQUIRED"). The base layer drops labels past low zooms, so a matching
+// "Reference" label layer is stacked on top.
+const ESRI = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas';
 const TILE_URLS = {
-  dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-  light: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+  dark: {
+    base: `${ESRI}/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}`,
+    labels: `${ESRI}/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}`,
+  },
+  light: {
+    base: `${ESRI}/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}`,
+    labels: `${ESRI}/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}`,
+  },
 };
+/** Canvas tiles exist through z16; Leaflet upscales them beyond that. */
+const TILE_OPTIONS: L.TileLayerOptions = { maxNativeZoom: 16, maxZoom: 19 };
 
 export function getMap(): L.Map {
   return map;
 }
 
 export function setMapTheme(theme: 'dark' | 'light'): void {
-  tileLayer?.setUrl(TILE_URLS[theme]);
+  baseLayer?.setUrl(TILE_URLS[theme].base);
+  labelLayer?.setUrl(TILE_URLS[theme].labels);
 }
 
 export async function initMap(): Promise<void> {
@@ -33,17 +48,16 @@ export async function initMap(): Promise<void> {
     attributionControl: false,
   });
 
-  tileLayer = L.tileLayer(TILE_URLS[getTheme()], {
-    subdomains: 'abcd',
-    maxZoom: 19,
-  }).addTo(map);
+  const theme = getTheme();
+  baseLayer = L.tileLayer(TILE_URLS[theme].base, TILE_OPTIONS).addTo(map);
+  labelLayer = L.tileLayer(TILE_URLS[theme].labels, TILE_OPTIONS).addTo(map);
 
   // Zoom control on the right
   L.control.zoom({ position: 'topright' }).addTo(map);
 
-  // Attribution (required by CartoDB)
+  // Attribution (required by Esri's basemap terms)
   L.control.attribution({ position: 'bottomright' })
-    .addAttribution('&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>')
+    .addAttribution('Tiles &copy; <a href="https://www.esri.com/">Esri</a> &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors')
     .addTo(map);
 
   initClusters(map);
