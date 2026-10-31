@@ -33,6 +33,7 @@ export const fr: Partial<Record<StringKey, string>> = {
   'toast.favoriteAdded': 'Ajouté aux favoris',
   'toast.favoriteRemoved': 'Retiré des favoris',
   'toast.stationLinkCopied': 'Lien de la station copié !',
+  'toast.apiUnavailable': 'Le service radio est injoignable pour le moment. Réessayez dans un instant.',
 
   'lists.title': 'Listes de Stations',
   'lists.tab.favorites': 'Favoris',

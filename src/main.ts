@@ -11,7 +11,7 @@ import { getStationOfTheDay } from './utils/station-of-the-day.ts';
 import { initListeningStats } from './utils/listening-stats.ts';
 import { initCommandPalette } from './utils/command-palette.ts';
 import { initThemeToggle, onThemeChange } from './utils/theme.ts';
-import { initI18n } from './i18n/i18n.ts';
+import { initI18n, t } from './i18n/i18n.ts';
 import { store } from './store/store.ts';
 import { audioPlayer } from './player/audio.ts';
 import { loadLists, saveLists, seedDefaultLists, loadCustomStations, saveCustomStations, seedC895 } from './store/persistence.ts';
@@ -125,7 +125,12 @@ async function handleStationRoute(uuid: string): Promise<void> {
   let station = store.get('stations').get(uuid) ?? null;
 
   if (!station) {
-    station = await fetchStationByUUID(uuid);
+    try {
+      station = await fetchStationByUUID(uuid);
+    } catch {
+      showToast(t('toast.apiUnavailable'));
+      return;
+    }
     if (station) {
       // Add to station map
       const stationMap = store.get('stations');
@@ -151,7 +156,13 @@ async function handleListRoute(label: string, ids: string[]): Promise<void> {
   // Fetch missing stations in batched byuuid requests
   const missingIds = ids.filter(id => !stationMap.has(id));
   if (missingIds.length > 0) {
-    const fetched = await fetchStationsByUUIDs(missingIds);
+    let fetched: Station[];
+    try {
+      fetched = await fetchStationsByUUIDs(missingIds);
+    } catch {
+      showToast(t('toast.apiUnavailable'));
+      return;
+    }
     fetched.forEach(s => stationMap.set(s.stationuuid, s));
     store.set('stations', stationMap);
   }

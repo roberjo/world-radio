@@ -31,6 +31,7 @@ export const STRINGS = {
   'toast.favoriteAdded': 'Added to Favorites',
   'toast.favoriteRemoved': 'Removed from Favorites',
   'toast.stationLinkCopied': 'Station link copied!',
+  'toast.apiUnavailable': 'Radio service is unreachable right now. Please try again shortly.',
 
   'lists.title': 'Station Lists',
   'lists.tab.favorites': 'Favorites',
