@@ -1,36 +1,75 @@
 import type { Station } from './types.ts';
 
-const API_SERVERS = [
+/**
+ * Radio Browser asks clients to discover mirrors at runtime rather than hardcode them —
+ * mirrors come and go (nl1/at1 stopped resolving entirely, and de2 became a DNS alias of
+ * de1). `all.api.radio-browser.info` round-robins across whatever is live and its
+ * /json/servers endpoint lists the current mirrors, CORS-enabled.
+ */
+const DISCOVERY_URL = 'https://all.api.radio-browser.info/json/servers';
+const FALLBACK_SERVERS = [
   'https://de1.api.radio-browser.info',
-  'https://de2.api.radio-browser.info',
-  'https://nl1.api.radio-browser.info',
-  'https://at1.api.radio-browser.info',
+  'https://all.api.radio-browser.info',
 ];
+const DISCOVERY_TIMEOUT_MS = 5000;
+const REQUEST_TIMEOUT_MS = 20000;
 
-let currentServerIndex = 0;
-
-function getServer(): string {
-  return API_SERVERS[currentServerIndex];
+/** Thrown when every mirror failed — distinct from a successful "no results" answer. */
+export class RadioApiUnavailableError extends Error {
+  constructor() {
+    super('All radio API servers failed');
+    this.name = 'RadioApiUnavailableError';
+  }
 }
 
-function nextServer(): void {
-  currentServerIndex = (currentServerIndex + 1) % API_SERVERS.length;
+let serversPromise: Promise<string[]> | null = null;
+/** Last server that answered successfully — tried first on the next request. */
+let preferredServer: string | null = null;
+
+async function discoverServers(): Promise<string[]> {
+  try {
+    const res = await fetch(DISCOVERY_URL, { signal: AbortSignal.timeout(DISCOVERY_TIMEOUT_MS) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const list = await res.json() as { name: string }[];
+    const names = [...new Set(list.map(s => s.name).filter(Boolean))]
+      .map(name => `https://${name}`);
+    // Shuffle to spread load, then append fallbacks so they're always tried last.
+    for (let i = names.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [names[i], names[j]] = [names[j], names[i]];
+    }
+    return [...new Set([...names, ...FALLBACK_SERVERS])];
+  } catch {
+    return [...FALLBACK_SERVERS];
+  }
 }
 
-async function apiFetch<T>(path: string, retries = 3): Promise<T> {
-  for (let i = 0; i < retries; i++) {
+function getServers(): Promise<string[]> {
+  serversPromise ??= discoverServers();
+  return serversPromise;
+}
+
+async function orderedServers(): Promise<string[]> {
+  const servers = await getServers();
+  if (!preferredServer) return servers;
+  return [preferredServer, ...servers.filter(s => s !== preferredServer)];
+}
+
+/** Try each known mirror once, in order. Per-request iteration, so concurrent calls
+ *  can't knock each other onto a bad server. */
+async function apiFetch<T>(path: string): Promise<T> {
+  for (const server of await orderedServers()) {
     try {
-      const res = await fetch(`${getServer()}${path}`, {
-        headers: { 'User-Agent': 'WorldRadio/1.0' },
-      });
+      const res = await fetch(`${server}${path}`, { signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return await res.json() as T;
+      const data = await res.json() as T;
+      preferredServer = server;
+      return data;
     } catch {
-      nextServer();
-      if (i === retries - 1) throw new Error('All radio API servers failed');
+      if (preferredServer === server) preferredServer = null;
     }
   }
-  throw new Error('All radio API servers failed');
+  throw new RadioApiUnavailableError();
 }
 
 export async function fetchTopStations(limit = 5000): Promise<Station[]> {
@@ -55,5 +94,7 @@ export async function fetchStationByUUID(uuid: string): Promise<Station | null> 
 }
 
 export function registerClick(stationuuid: string): void {
-  fetch(`${getServer()}/json/url/${stationuuid}`, { method: 'POST' }).catch(() => {});
+  void orderedServers().then(([server]) =>
+    fetch(`${server}/json/url/${encodeURIComponent(stationuuid)}`, { method: 'POST' })
+  ).catch(() => {});
 }
